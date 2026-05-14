@@ -88,4 +88,6 @@ window.formatRibuan           = formatRibuan;
 window._onDataReady = () => {
   startNotifScheduler();
   renderNotifSettings();
+  // Refresh year options berdasarkan data aktual dari Firebase
+  if (typeof window.refreshYearOptions === 'function') window.refreshYearOptions();
 };
