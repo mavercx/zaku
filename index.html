@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Zaku — Navigasi Keuangan Pribadi</title>
+
+<!-- ── PWA / App Meta ── -->
+<meta name="application-name" content="Zaku App">
+<meta name="theme-color" content="#4E6E5A">
+<meta name="description" content="Navigasi Keuangan Pribadi">
+
+<!-- ── Apple / iOS ── -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Zaku">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+<!-- ── Favicon ── -->
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="shortcut icon" href="icons/favicon.ico">
+
+<!-- ── PWA Manifest ── -->
+<link rel="manifest" href="manifest.json">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+<div id="loader"><div class="spinner"></div></div>
+<div id="toast-container"></div>
+
+<!-- MODAL KONFIRMASI -->
+<div id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Hapus?</div>
+    <div class="modal-desc" id="modal-desc">Tindakan ini tidak dapat dibatalkan.</div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeModal()">Batal</button>
+      <button class="btn-modal-ok" id="modal-ok-btn">Ya, Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACY MODAL -->
+<div id="privacy-overlay">
+  <div class="privacy-box">
+    <div class="privacy-title">🔐 Kebijakan Privasi</div>
+    <div class="privacy-section">
+      <h4>Data yang kami kumpulkan</h4>
+      <p>Zaku hanya mengumpulkan data yang Anda masukkan sendiri: nama akun Google, transaksi keuangan (nominal, kategori, tanggal, keterangan), pengaturan anggaran, dan preferensi kategori.</p>
+    </div>
+    <div class="privacy-section">
+      <h4>Di mana data disimpan</h4>
+      <p>Semua data disimpan di Firebase Firestore milik Anda sendiri, terisolasi per akun Google. Data tidak pernah dibagikan ke pihak ketiga manapun.</p>
+    </div>
+    <div class="privacy-section">
+      <h4>Keamanan</h4>
+      <p>Akses ke data dilindungi oleh Firebase Security Rules — hanya akun Google Anda yang bisa membaca dan menulis data Anda. Koneksi selalu menggunakan HTTPS/TLS.</p>
+    </div>
+    <div class="privacy-section">
+      <h4>Penghapusan data</h4>
+      <p>Anda bisa menghapus seluruh data kapan saja melalui Firebase Console atau dengan menghubungi pengembang. Logout tidak menghapus data.</p>
+    </div>
+    <div class="privacy-section">
+      <h4>Analitik &amp; iklan</h4>
+      <p>Zaku tidak menggunakan analytics tracker, pixel iklan, atau layanan pihak ketiga lain selain Firebase (Google) dan Google Fonts. Tidak ada iklan.</p>
+    </div>
+    <button class="btn-privacy-close" onclick="closePrivacy()">Mengerti, Tutup</button>
+  </div>
+</div>
+
+<!-- SUPPORT MODAL -->
+<div id="support-overlay">
+  <div class="support-box">
+    <div class="support-badge">Gratis selamanya</div>
+    <div class="support-title">Kalau <span>Zaku</span> membantu,<br>support yuk! ☕</div>
+    <p class="support-desc">App ini saya bangun sendiri dan gratis dipakai siapa saja. Jika bermanfaat, dukung saya beli segelas <b>Americano</b> untuk semangat kembangkan fitur berikutnya.</p>
+    <a href="https://trakteer.id/ridhocatur" target="_blank" class="btn-support-ok">☕ Support via Trakteer</a>
+    <button class="btn-support-skip" onclick="closeSupportModal()">Tidak sekarang</button>
+  </div>
+</div>
+
+<!-- INSTALL MODAL -->
+<div id="install-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:3500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;">
+  <div style="background:var(--surface);border-radius:var(--radius);padding:24px;max-width:340px;width:90%;box-shadow:0 16px 40px rgba(0,0,0,0.2);">
+    <div style="font-size:16px;font-weight:800;margin-bottom:4px;">📲 Pasang di layar utama</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:18px;">Akses Zaku lebih cepat seperti aplikasi HP.</div>
+    <div style="display:flex;gap:8px;margin-bottom:20px;">
+      <button id="tab-android" onclick="installTab('android')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--accent);background:var(--accent-bg);color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);">Android</button>
+      <button id="tab-ios"     onclick="installTab('ios')"     style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);">iPhone / iPad</button>
+    </div>
+    <!-- Android steps -->
+    <div id="install-android" style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:26px;height:26px;border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div><div style="font-size:13px;line-height:1.6;">Buka Zaku di <b>Chrome</b></div></div>
+      <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:26px;height:26px;border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div><div style="font-size:13px;line-height:1.6;">Tap ikon <code style="background:var(--surface2);border:1px solid var(--border);padding:1px 7px;border-radius:5px;font-size:12px;">⋮</code> di pojok kanan atas</div></div>
+      <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:26px;height:26px;border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div><div style="font-size:13px;line-height:1.6;">Pilih <code style="background:var(--surface2);border:1px solid var(--border);padding:1px 7px;border-radius:5px;font-size:12px;">Tambahkan ke layar utama</code></div></div>
+      <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:26px;height:26px;border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">4</div><div style="font-size:13px;line-height:1.6;">Tap <code style="background:var(--surface2);border:1px solid var(--border);padding:1px 7px;border-radius:5px;font-size:12px;">Tambahkan</code> — selesai! 🎉</div></div>
+    </div>
+    <!-- iOS steps -->
+    <div id="install-ios" style="display:none;flex-direction:column;gap:14px;">
+      <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:26px;height:26px;border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div><div style="font-size:13px;line-height:1.6;">Buka Zaku di <b>Safari</b></div></div>
+      <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:26px;height:26px;border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div><div style="font-size:13px;line-height:1.6;">Tap ikon <code style="background:var(--surface2);border:1px solid var(--border);padding:1px 7px;border-radius:5px;font-size:12px;">⬆️ Bagikan</code> di tengah bawah</div></div>
+      <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:26px;height:26px;border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div><div style="font-size:13px;line-height:1.6;">Scroll, pilih <code style="background:var(--surface2);border:1px solid var(--border);padding:1px 7px;border-radius:5px;font-size:12px;">Tambah ke Layar Utama</code></div></div>
+      <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:26px;height:26px;border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">4</div><div style="font-size:13px;line-height:1.6;">Tap <code style="background:var(--surface2);border:1px solid var(--border);padding:1px 7px;border-radius:5px;font-size:12px;">Tambahkan</code> — selesai! 🎉</div></div>
+    </div>
+    <button onclick="closeInstall()" style="width:100%;margin-top:20px;padding:13px;border-radius:var(--radius-sm);background:var(--accent);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);">Mengerti, tutup</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-title">Zaku<span> App</span></div>
+    <div class="login-tagline">Navigasi Keuangan Pribadi</div>
+    <div class="login-desc">Masuk untuk mulai navigasi keuangan pribadi Anda</div>
+    <button class="btn-google" onclick="loginGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"> Masuk dengan Google
+    </button>
+    <div class="login-privacy">Dengan masuk, Anda menyetujui <a onclick="openPrivacy()">Kebijakan Privasi</a> kami.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-content" style="display:none;">
+  <nav class="nav">
+    <div>
+      <div class="nav-brand">Zaku<span> App</span></div>
+      <div class="nav-tagline">Navigasi Keuangan Pribadi</div>
+    </div>
+    <!-- Desktop navigation tabs -->
+    <div class="nav-desktop-tabs" id="nav-desktop-tabs">
+      <button class="nav-desktop-tab active" id="dnt-beranda"   onclick="goTo('beranda','Beranda')">🏠 Beranda</button>
+      <button class="nav-desktop-tab"        id="dnt-transaksi" onclick="goTo('transaksi','Transaksi')">📅 Transaksi</button>
+      <button class="nav-desktop-tab"        id="dnt-analitik"  onclick="goTo('analitik','Analitik')">📊 Analitik</button>
+      <button class="nav-desktop-tab"        id="dnt-cc"        onclick="goTo('cc','Kartu Kredit')">💳 CC</button>
+      <button class="nav-desktop-tab"        id="dnt-input"     onclick="goTo('input','Catat')" style="background:var(--accent);border-color:var(--accent);color:#fff;">+ Catat</button>
+    </div>
+    <div class="nav-right">
+      <div class="export-wrap">
+        <button class="btn-export" onclick="toggleExport()" title="Ekspor Data">📥</button>
+        <div class="export-dropdown" id="export-dropdown">
+          <button class="export-tab" onclick="exportCSV(); closeExport()">📊 Download CSV</button>
+          <button class="export-tab" onclick="exportPDF(); closeExport()">📄 Download PDF</button>
+        </div>
+      </div>
+      <button id="theme-toggle" class="btn-theme" onclick="toggleTheme()">🌙</button>
+      <div class="export-wrap">
+        <button class="btn-nav-more" onclick="toggleMoreMenu()" title="Lainnya">⋯</button>
+        <div class="more-dropdown export-dropdown" id="more-dropdown">
+          <button class="export-tab" onclick="goTo('pengaturan','Pengaturan'); closeMoreMenu()">⚙️ Pengaturan</button>
+          <button class="export-tab" onclick="openInstall(); closeMoreMenu()">📲 Pasang di HP</button>
+          <button class="export-tab" onclick="openSupportModal(); closeMoreMenu()">☕ Support</button>
+          <button class="export-tab" style="color:var(--red);" onclick="confirmLogout()">🚪 Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ALERT CONTAINER — in-app notifications -->
+  <div id="alert-container"></div>
+
+  <!-- BERANDA -->
+  <div class="container page active" id="page-beranda">
+    <div class="period-bar" data-swipe-period>
+      <select id="b-month" onchange="syncPeriod('b-month')"></select>
+      <select id="b-year"  onchange="syncPeriod('b-year')"></select>
+    </div>
+    <div id="b-summary"></div>
+    <div id="onboarding">
+      <div class="onboarding-card">
+        <div class="onboarding-title">Selamat datang di <span>Zaku</span>! 👋</div>
+        <div class="onboarding-sub">Mulai kelola keuangan Anda dalam 3 langkah mudah.</div>
+        <div class="onboarding-steps">
+          <div class="ob-step" onclick="goTo('input','Catat')"><div class="ob-icon">✏️</div><div class="ob-label">1. Catat Transaksi</div><div class="ob-desc">Masukkan pemasukan atau pengeluaran pertama Anda</div></div>
+          <div class="ob-step" onclick="goTo('budget','Anggaran')"><div class="ob-icon">🎯</div><div class="ob-label">2. Set Anggaran</div><div class="ob-desc">Tentukan batas belanja per kategori agar tidak boros</div></div>
+          <div class="ob-step" onclick="goTo('analitik','Analitik')"><div class="ob-icon">📊</div><div class="ob-label">3. Lihat Analitik</div><div class="ob-desc">Pantau tren dan porsi pengeluaran bulanan &amp; tahunan</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="stat-grid" id="b-accounts"></div>
+    <div class="stat-grid" id="b-stats"></div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Aktivitas Terakhir</span></div>
+      <div id="b-recent"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Ringkasan Kartu Kredit Bulan Ini</span></div>
+      <div id="b-cc"></div>
+    </div>
+    <div class="support-strip" id="support-strip-beranda">
+      <div class="support-strip-left">
+        <div class="support-strip-icon">☕</div>
+        <div>
+          <div class="support-strip-title">App ini gratis — support pengembangan</div>
+          <div class="support-strip-sub">Trakteer <b>Americano</b></div>
+        </div>
+      </div>
+      <button class="support-strip-btn" onclick="openSupportModal()">Support →</button>
+    </div>
+  </div>
+
+  <!-- INPUT -->
+  <div class="container page" id="page-input">
+    <div class="card" style="padding:24px;">
+      <h3 id="form-title" style="margin-bottom:20px;font-size:18px;font-weight:800;">Catat Transaksi</h3>
+      <input type="hidden" id="f-id">
+      <div class="form-grid">
+        <div class="form-group"><label>Jenis</label><select id="f-jenis" onchange="updateKategoriDropdown()"><option value="Pengeluaran">Pengeluaran</option><option value="Pemasukan">Pemasukan</option></select></div>
+        <div class="form-group"><label>Tanggal</label><input type="date" id="f-tanggal"></div>
+        <div class="form-group"><label>Akun / Metode</label><select id="f-metode" onchange="checkAutoCC()"><option>QRIS/Transfer</option><option>Cash</option><option>Kartu Kredit</option></select></div>
+        <div class="form-group"><label>Kategori</label><select id="f-kategori"></select></div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Nominal (Rp)</label>
+        <input type="text" id="f-nominal-display" placeholder="0" oninput="formatRibuan(this)">
+        <input type="hidden" id="f-nominal">
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>Keterangan</label>
+        <input type="text" id="f-ket" list="histori-ket" placeholder="Contoh: Bensin Picanto..." oninput="syncFieldsFromHistory(this.value)">
+        <datalist id="histori-ket"></datalist>
+      </div>
+      <div style="display:flex;gap:20px;margin-bottom:20px;">
+        <label id="wrap-cc" style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;"><input type="checkbox" id="f-cc"> Tagihan CC</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;"><input type="checkbox" id="f-recur"> Berulang (Recurring)</label>
+      </div>
+      <div class="action-buttons">
+        <button class="btn-cancel" onclick="resetForm()">Batal</button>
+        <button class="btn-submit" id="btn-save" onclick="simpan()">Simpan Transaksi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRANSAKSI -->
+  <div class="container page" id="page-transaksi">
+    <div class="filter-bar" data-swipe-period>
+      <select id="t-month" onchange="syncPeriod('t-month')"></select>
+      <select id="t-year"  onchange="syncPeriod('t-year')"></select>
+      <select id="t-jenis" onchange="renderTransaksi()"><option value="">Semua Jenis</option><option value="Pengeluaran">Pengeluaran</option><option value="Pemasukan">Pemasukan</option></select>
+      <select id="t-kat"   onchange="renderTransaksi()"><option value="">Semua Kategori</option></select>
+    </div>
+    <div class="card"><div id="t-list" data-swipe-delete></div></div>
+  </div>
+
+  <!-- ANALITIK -->
+  <div class="container page" id="page-analitik">
+    <div class="period-bar" data-swipe-period>
+      <select id="a-month" onchange="syncPeriod('a-month')"></select>
+      <select id="a-year"  onchange="syncPeriod('a-year')"></select>
+    </div>
+
+    <!-- Rekapitulasi Tahunan -->
+    <div class="card" style="margin-bottom:24px;border:2px solid var(--accent-bg);">
+      <div class="card-header" style="background:var(--surface2);"><span class="card-title" style="color:var(--accent);">Rekapitulasi Tahunan (<span id="y-label"></span>)</span></div>
+      <div style="padding:20px;"><div class="stat-grid" id="y-stats" style="margin-bottom:0;"></div></div>
+    </div>
+
+    <!-- Tren Grafik Tahunan -->
+    <div class="card" style="padding:20px;margin-bottom:24px;">
+      <h4 style="margin-bottom:16px;font-size:14px;font-weight:700;">Tren Grafik Tahunan</h4>
+      <canvas id="trendChart" height="120"></canvas>
+    </div>
+
+    <!-- BARU: Proyeksi Akhir Bulan -->
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-header">
+        <span class="card-title">🔮 Proyeksi Akhir Bulan (<span id="a-label-proyeksi"></span>)</span>
+      </div>
+      <div id="a-proyeksi" style="padding:20px;"></div>
+    </div>
+
+    <!-- BARU: Perbandingan Bulan ini vs Bulan Lalu -->
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-header">
+        <span class="card-title">📊 Perbandingan Pengeluaran (<span id="a-label-perbandingan"></span>)</span>
+      </div>
+      <div id="a-perbandingan" style="padding:20px;"></div>
+    </div>
+
+    <!-- BARU: Tren Per Kategori -->
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-header">
+        <span class="card-title">📈 Tren Per Kategori (<span id="y-label-trend"></span>)</span>
+      </div>
+      <div style="padding:16px 20px 8px;">
+        <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Pilih kategori yang ingin ditampilkan:</div>
+        <div id="a-kat-trend-picker" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
+        <div id="a-kat-trend-empty" style="display:block;text-align:center;padding:24px;color:var(--text3);font-size:13px;">
+          Pilih minimal satu kategori di atas untuk melihat grafik tren
+        </div>
+        <canvas id="katTrendChart" height="140"></canvas>
+      </div>
+    </div>
+
+    <!-- Porsi Pengeluaran Tahunan -->
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-header"><span class="card-title">Porsi Pengeluaran Tahunan (<span id="y-label-kat"></span>)</span></div>
+      <div id="y-kat"></div>
+    </div>
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-header"><span class="card-title">Top 5 Pengeluaran Terbesar (<span id="y-label-top"></span>)</span></div>
+      <div id="y-top-list"></div>
+    </div>
+    <div class="tren-grid">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Porsi Pengeluaran Bulanan (<span id="a-label-bulan"></span>)</span></div>
+        <div id="a-kat"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Sumber Pemasukan Bulanan (<span id="a-label-masuk"></span>)</span></div>
+        <div id="a-masuk"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUDGET -->
+  <div class="container page" id="page-budget">
+    <div class="period-bar" data-swipe-period>
+      <select id="bg-month" onchange="syncPeriod('bg-month')"></select>
+      <select id="bg-year"  onchange="syncPeriod('bg-year')"></select>
+    </div>
+    <div class="card" style="padding:24px;margin-bottom:24px;">
+      <h4 style="font-size:15px;font-weight:800;margin-bottom:16px;">Atur Anggaran Baru</h4>
+      <div class="form-grid">
+        <div class="form-group"><label>Kategori Pengeluaran</label><select id="bg-kategori"></select></div>
+        <div class="form-group"><label>Batas Maksimal (Rp)</label><input type="text" id="bg-limit-display" placeholder="0" oninput="formatRibuan(this)"><input type="hidden" id="bg-limit"></div>
+      </div>
+      <button class="btn-submit" onclick="simpanBudget()" style="padding:12px;">Set Anggaran</button>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Status Anggaran Bulan Ini</span></div>
+      <div id="bg-list" style="padding:20px;"></div>
+    </div>
+  </div>
+
+  <!-- KONTROL CC -->
+  <div class="container page" id="page-cc">
+    <div class="period-bar" data-swipe-period>
+      <select id="c-month" onchange="syncPeriod('c-month')"></select>
+      <select id="c-year"  onchange="syncPeriod('c-year')"></select>
+    </div>
+
+    <!-- Stats 4 kartu -->
+    <div class="stat-grid" id="c-stats"></div>
+
+    <!-- Progress bar limit -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">Penggunaan Limit</span></div>
+      <div id="c-bar"></div>
+    </div>
+
+    <!-- Status pembayaran bulan ini -->
+    <div id="c-payment-status"></div>
+
+    <!-- Rincian transaksi CC -->
+    <div class="card">
+      <div class="card-header"><span class="card-title" id="c-rincian-title">Rincian Transaksi CC</span></div>
+      <div id="c-list"></div>
+    </div>
+
+    <!-- Simulasi Cicilan -->
+    <div class="card" style="margin-top:0;">
+      <div class="card-header">
+        <span class="card-title">🧮 Simulasi Cicilan</span>
+      </div>
+      <div id="c-cicilan" style="padding:20px;"></div>
+    </div>
+
+    <!-- Kalender Riwayat Pembayaran -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📅 Riwayat Pembayaran Tahunan</span>
+      </div>
+      <div id="c-history-calendar" style="padding:20px;"></div>
+    </div>
+  </div>
+
+  <!-- PENGATURAN -->
+  <div class="container page" id="page-pengaturan">
+    <div class="card" style="padding:24px;margin-bottom:24px;">
+      <h3 style="margin-bottom:24px;font-size:18px;font-weight:800;">Pengaturan Aplikasi</h3>
+
+      <div style="font-weight:700;margin-bottom:12px;font-size:14px;color:var(--green);">🏷️ Kustomisasi Kategori</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Nama Kategori Baru</label><input type="text" id="new-kat-name" placeholder="Misal: Freelance, Hobi Selam..."></div>
+        <div class="form-group"><label>Jenis</label><select id="new-kat-type"><option value="Pengeluaran">Pengeluaran</option><option value="Pemasukan">Pemasukan</option></select></div>
+      </div>
+      <button class="btn-submit" onclick="tambahKategori()" style="background:var(--green);padding:10px;margin-bottom:20px;">Tambah Kategori</button>
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px;text-transform:uppercase;">Kategori Pemasukan</div>
+      <div id="kat-list-pemasukan" class="tag-list" style="margin-bottom:16px;"></div>
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px;text-transform:uppercase;">Kategori Pengeluaran</div>
+      <div id="kat-list-pengeluaran" class="tag-list"></div>
+
+      <hr style="border:0;border-top:1px solid var(--border);margin:28px 0;">
+      <div style="font-weight:700;margin-bottom:12px;font-size:14px;color:var(--amber);">🔔 Notifikasi & Pengingat</div>
+      <div id="notif-settings-block" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:4px;"></div>
+
+      <hr style="border:0;border-top:1px solid var(--border);margin:28px 0;">
+      <div style="font-weight:700;margin-bottom:12px;font-size:14px;color:var(--accent);">💳 Kartu Kredit</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Limit Kartu (Rp)</label><input type="text" id="s-cc-limit-display" oninput="formatRibuan(this)"><input type="hidden" id="s-cc-limit"></div>
+        <div class="form-group"><label>Tanggal Cetak Tagihan (Cut-off)</label><input type="number" id="s-cc-cutoff" min="1" max="31"></div>
+      </div>
+      <button class="btn-submit" onclick="simpanPengaturanCC()" style="padding:11px;margin-top:12px;margin-bottom:28px;">Simpan Pengaturan</button>
+
+      <hr style="border:0;border-top:1px solid var(--border);margin:28px 0;">
+      <div style="font-weight:700;margin-bottom:12px;font-size:14px;color:var(--purple);">🔄 Migrasi Data Riwayat Lama</div>
+      <input type="file" id="file-import" accept=".tsv" style="font-size:13px;padding:12px;border:1.5px dashed var(--border);border-radius:var(--radius-sm);margin-bottom:16px;width:100%;cursor:pointer;background:var(--surface2);">
+      <button class="btn-submit" onclick="importDataTSV()" style="background:var(--purple);padding:12px;">Mulai Sinkronisasi</button>
+
+      <hr style="border:0;border-top:1px solid var(--border);margin:28px 0;">
+      <div style="font-weight:700;margin-bottom:12px;font-size:14px;color:var(--text2);">⚖️ Informasi &amp; Privasi</div>
+      <button class="btn-cancel" onclick="openPrivacy()" style="width:auto;padding:10px 20px;">🔐 Baca Kebijakan Privasi</button>
+      <button class="btn-cancel" onclick="openInstall()" style="width:auto;padding:10px 20px;margin-top:10px;">📲 Panduan Pasang di HP</button>
+
+      <hr style="border:0;border-top:1px solid var(--border);margin:28px 0;">
+      <div style="font-weight:700;margin-bottom:12px;font-size:14px;color:var(--accent);">☕ Support Pengembang</div>
+      <a href="https://trakteer.id/ridhocatur" target="_blank"
+         style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;text-decoration:none;transition:border-color .2s,box-shadow .2s;"
+         onmouseover="this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
+         onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+        <div style="width:42px;height:42px;background:var(--accent-bg);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">☕</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;">Support pengembang</div>
+          <div style="font-size:12px;color:var(--text3);">App gratis — Trakteer <b>Americano</b></div>
+        </div>
+        <div style="color:var(--text3);font-size:18px;font-weight:300;">›</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV BAR -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bn-tab active" id="bn-beranda" onclick="goTo('beranda','Beranda')">
+    <svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+    <span class="bn-label">Beranda</span>
+  </button>
+  <button class="bn-tab" id="bn-transaksi" onclick="goTo('transaksi','Transaksi')">
+    <svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span class="bn-label">Transaksi</span>
+  </button>
+  <div class="bn-fab-slot"></div>
+  <button class="bn-tab" id="bn-analitik" onclick="goTo('analitik','Analitik')">
+    <svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    <span class="bn-label">Analitik</span>
+  </button>
+  <button class="bn-tab" id="bn-cc" onclick="goTo('cc','Kartu Kredit')">
+    <svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    <span class="bn-label">CC</span>
+  </button>
+</nav>
+
+<!-- FAB -->
+<button class="fab" id="fab-catat" onclick="goTo('input','Catat')">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="26" height="26"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<!-- UX MODULE -->
+<script type="module" src="js/ux.js"></script>
+
+<!-- SERVICE WORKER -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(r => console.log('SW registered:', r.scope))
+      .catch(e => console.warn('SW failed:', e));
+  });
+}
+</script>
+
+<!-- ENTRY POINT — semua JS dimuat dari sini -->
+<script type="module" src="js/app.js"></script>
+
+</body>
+</html>
