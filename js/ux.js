@@ -14,71 +14,28 @@ const SWIPE_RESTRAINT   = 80;   // px max perpendicular drift
 const DELETE_THRESHOLD  = 80;   // px swipe to reveal delete
 
 // ── 1. BOTTOM NAV ACTIVE STATE ────────────────
-// Patch goTo to also update bottom nav active tab
-(function patchGoTo() {
-  const BN_MAP = {
-    beranda:    'bn-beranda',
-    transaksi:  'bn-transaksi',
-    analitik:   'bn-analitik',
-    budget:     null,           // no direct tab, FAB handles input
-    cc:         'bn-cc',
-    input:      null,
-    pengaturan: null,
-  };
-
-  // Poll until window.goTo is available (loaded by app.js)
-  const interval = setInterval(() => {
-    if (typeof window.goTo !== 'function') return;
-    clearInterval(interval);
-
-    const _original = window.goTo;
-    window.goTo = function(page, label) {
-      _original(page, label);
-      updateBottomNav(page);
-    };
-  }, 50);
-
-  window._updateBottomNav = updateBottomNav;
+// goTo() di ui.js sudah memanggil window._updateBottomNav langsung.
+// ux.js tidak perlu patch lagi — cukup pastikan fungsi tersedia.
+(function initBottomNavSync() {
+  // Set active state saat halaman pertama load
+  document.addEventListener('DOMContentLoaded', () => {
+    const activePage = document.querySelector('.page.active');
+    if (activePage && typeof window._updateBottomNav === 'function') {
+      window._updateBottomNav(activePage.id.replace('page-', ''));
+    }
+  });
+  // Fallback: kalau DOMContentLoaded sudah lewat (modul load async)
+  if (document.readyState !== 'loading') {
+    setTimeout(() => {
+      const activePage = document.querySelector('.page.active');
+      if (activePage && typeof window._updateBottomNav === 'function') {
+        window._updateBottomNav(activePage.id.replace('page-', ''));
+      }
+    }, 300);
+  }
 })();
 
-function updateBottomNav(page) {
-  document.querySelectorAll('.bn-tab').forEach(t => t.classList.remove('active'));
-  const BN_MAP = {
-    beranda:   'bn-beranda',
-    transaksi: 'bn-transaksi',
-    analitik:  'bn-analitik',
-    cc:        'bn-cc',
-  };
-  const id = BN_MAP[page];
-  if (id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.add('active');
-  }
-
-  // ── Sync desktop nav tabs ──
-  const DNT_MAP = {
-    beranda:   'dnt-beranda',
-    transaksi: 'dnt-transaksi',
-    analitik:  'dnt-analitik',
-    cc:        'dnt-cc',
-    input:     'dnt-input',
-  };
-  document.querySelectorAll('.nav-desktop-tab').forEach(t => {
-    // Reset semua kecuali tombol Catat (warna tetap accent)
-    if (t.id !== 'dnt-input') t.classList.remove('active');
-  });
-  const dntId = DNT_MAP[page];
-  if (dntId) {
-    const dntEl = document.getElementById(dntId);
-    if (dntEl) dntEl.classList.add('active');
-  }
-
-  // Hide/show FAB — hide on input page, show everywhere else
-  const fab = document.getElementById('fab-catat');
-  if (fab) fab.style.transform = page === 'input'
-    ? 'translateX(-50%) scale(0)'
-    : 'translateX(-50%) scale(1)';
-}
+// _updateBottomNav sekarang didefinisikan di ui.js dan di-expose ke window
 
 // ── 2. MORE MENU ──────────────────────────────
 window.toggleMoreMenu = function() {
@@ -329,12 +286,6 @@ function initFAB() {
 document.addEventListener('DOMContentLoaded', () => {
   initSwipePeriod();
   initFAB();
-  // Set active state awal berdasarkan halaman yang aktif
-  const activePage = document.querySelector('.page.active');
-  if (activePage) {
-    const pageId = activePage.id.replace('page-', '');
-    updateBottomNav(pageId);
-  }
   // swipe-to-delete init runs after app renders t-list
   setTimeout(initSwipeToDelete, 800);
 });
