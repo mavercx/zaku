@@ -107,13 +107,24 @@ export function renderBeranda() {
 
   renderSummary(m, y, mIn, mOut);
 
-  const calcBal = (met) =>
-    window.data.filter(r => r.metode === met && r.jenis === 'Pemasukan').reduce((s, r) => s + Number(r.nominal), 0) -
-    window.data.filter(r =>
-      r.metode === met &&
-      r.jenis  === 'Pengeluaran' &&
-      r.kategori !== 'Bayar Tagihan CC'   // bayar CC = lunasi utang, bukan pengeluaran baru
-    ).reduce((s, r) => s + Number(r.nominal), 0);
+// 1. Hitung dulu berapa total uang yang sudah kita keluarkan untuk bayar CC
+  const totalLunasCC = Object.values(window.ccPayments || {}).reduce((s, p) => s + (Number(p.nominal) || 0), 0);
+
+  // 2. Ganti fungsi calcBal lama dengan versi ini
+  const calcBal = (met) => {
+    // Hitung pemasukan - pengeluaran dasar untuk metode tersebut
+    const basePemasukan = window.data.filter(r => r.metode === met && r.jenis === 'Pemasukan').reduce((s, r) => s + Number(r.nominal), 0);
+    const basePengeluaran = window.data.filter(r => r.metode === met && r.jenis === 'Pengeluaran' && r.kategori !== 'Bayar Tagihan CC').reduce((s, r) => s + Number(r.nominal), 0);
+    
+    let saldo = basePemasukan - basePengeluaran;
+
+    // KHUSUS untuk QRIS/Bank, kita potong lagi dengan uang yang dipakai bayar CC
+    if (met === 'QRIS/Transfer') {
+      saldo = saldo - totalLunasCC;
+    }
+    
+    return saldo;
+  };
 
   document.getElementById('b-accounts').innerHTML = `
     <div class="stat-card c-purple">
