@@ -48,11 +48,20 @@ function barRowsHTML(obj, color = 'var(--accent)') {
 
 // ── RENDER SUMMARY BAR ───────────────────────────────────────
 function renderSummary(m, y, mIn, mOut) {
-  const totalSaldo =
-    (window.data.filter(r => r.metode === 'Cash' && r.jenis === 'Pemasukan').reduce((s,r) => s + Number(r.nominal), 0) -
-     window.data.filter(r => r.metode === 'Cash' && r.jenis === 'Pengeluaran' && r.kategori !== 'Bayar Tagihan CC').reduce((s,r) => s + Number(r.nominal), 0)) +
-    (window.data.filter(r => r.metode === 'QRIS/Transfer' && r.jenis === 'Pemasukan').reduce((s,r) => s + Number(r.nominal), 0) -
-     window.data.filter(r => r.metode === 'QRIS/Transfer' && r.jenis === 'Pengeluaran' && r.kategori !== 'Bayar Tagihan CC').reduce((s,r) => s + Number(r.nominal), 0));
+  // 1. Ambil total semua yang sudah diklik "Bayar" di Tab CC
+  const totalCCPaid = Object.values(window.ccPayments || {}).reduce((s, p) => s + (Number(p.nominal) || 0), 0);
+
+  // 2. Hitung saldo dasar (Pemasukan - Pengeluaran Non-CC)
+  const basicCash = 
+    window.data.filter(r => r.metode === 'Cash' && r.jenis === 'Pemasukan').reduce((s,r) => s + Number(r.nominal), 0) -
+    window.data.filter(r => r.metode === 'Cash' && r.jenis === 'Pengeluaran' && r.kategori !== 'Bayar Tagihan CC').reduce((s,r) => s + Number(r.nominal), 0);
+
+  const basicBank = 
+    window.data.filter(r => r.metode === 'QRIS/Transfer' && r.jenis === 'Pemasukan').reduce((s,r) => s + Number(r.nominal), 0) -
+    window.data.filter(r => r.metode === 'QRIS/Transfer' && r.jenis === 'Pengeluaran' && r.kategori !== 'Bayar Tagihan CC').reduce((s,r) => s + Number(r.nominal), 0);
+
+  // 3. Saldo Riil = Total Saldo Dasar dikurangi Pembayaran CC
+  const totalSaldo = (basicCash + basicBank) - totalCCPaid;
 
   const selisih  = mIn - mOut;
   const pctUsed  = mIn > 0 ? Math.min(Math.round(mOut / mIn * 100), 100) : (mOut > 0 ? 100 : 0);
