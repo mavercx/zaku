@@ -354,7 +354,8 @@ export function syncFieldsFromHistory(val) {
     document.getElementById('f-metode').value          = match.metode;
     document.getElementById('f-nominal').value         = match.nominal;
     document.getElementById('f-nominal-display').value = Number(match.nominal).toLocaleString('id-ID');
-    document.getElementById('f-cc').checked            = match.cc;
+    // Gunakan checkAutoCC agar checkbox CC selalu konsisten dengan metode + jenis
+    if (typeof window.checkAutoCC === 'function') window.checkAutoCC();
     showToast('Terisi otomatis dari riwayat!');
   }
 }
