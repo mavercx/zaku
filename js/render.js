@@ -119,6 +119,8 @@ export function renderBeranda() {
   const rows = window.data.filter(d => d.bulan === m && parseInt(d.tahun) === y);
 
   const mIn  = rows.filter(r => r.jenis === 'Pemasukan').reduce((s, r) => s + r.nominal, 0);
+  // Pengeluaran riil = semua pengeluaran bulan ini termasuk CC,
+  // kecuali "Bayar Tagihan CC" agar tidak dobel hitung
   const mOut = rows
     .filter(r => r.jenis === 'Pengeluaran' && r.kategori !== 'Bayar Tagihan CC')
     .reduce((s, r) => s + r.nominal, 0);
