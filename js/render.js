@@ -46,22 +46,31 @@ function barRowsHTML(obj, color = 'var(--accent)') {
   ).join('');
 }
 
+// ── HELPER: Hitung saldo per metode ──────────────────────────
+// Transaksi CC (metode='Kartu Kredit') dianggap memotong saldo QRIS/Transfer
+// karena CC hanya alat bayar, bukan rekening terpisah.
+function calcBal(met) {
+  const masuk = window.data
+    .filter(r => r.metode === met && r.jenis === 'Pemasukan')
+    .reduce((s, r) => s + Number(r.nominal), 0);
+
+  const keluar = window.data
+    .filter(r => {
+      if (r.jenis !== 'Pengeluaran') return false;
+      if (r.kategori === 'Bayar Tagihan CC') return false;
+      // Pengeluaran CC dibebankan ke QRIS/Transfer
+      if (r.metode === 'Kartu Kredit') return met === 'QRIS/Transfer';
+      return r.metode === met;
+    })
+    .reduce((s, r) => s + Number(r.nominal), 0);
+
+  return masuk - keluar;
+}
+
 // ── RENDER SUMMARY BAR ───────────────────────────────────────
 function renderSummary(m, y, mIn, mOut) {
-  // 1. Ambil total semua yang sudah diklik "Bayar" di Tab CC
-  const totalCCPaid = Object.values(window.ccPayments || {}).reduce((s, p) => s + (Number(p.nominal) || 0), 0);
-
-  // 2. Hitung saldo dasar (Pemasukan - Pengeluaran Non-CC)
-  const basicCash = 
-    window.data.filter(r => r.metode === 'Cash' && r.jenis === 'Pemasukan').reduce((s,r) => s + Number(r.nominal), 0) -
-    window.data.filter(r => r.metode === 'Cash' && r.jenis === 'Pengeluaran' && r.kategori !== 'Bayar Tagihan CC').reduce((s,r) => s + Number(r.nominal), 0);
-
-  const basicBank = 
-    window.data.filter(r => r.metode === 'QRIS/Transfer' && r.jenis === 'Pemasukan').reduce((s,r) => s + Number(r.nominal), 0) -
-    window.data.filter(r => r.metode === 'QRIS/Transfer' && r.jenis === 'Pengeluaran' && r.kategori !== 'Bayar Tagihan CC').reduce((s,r) => s + Number(r.nominal), 0);
-
-  // 3. Saldo Riil = Total Saldo Dasar dikurangi Pembayaran CC
-  const totalSaldo = (basicCash + basicBank) - totalCCPaid;
+  // calcBal sudah menggabungkan pengeluaran CC ke QRIS/Transfer
+  const totalSaldo = calcBal('Cash') + calcBal('QRIS/Transfer');
 
   const selisih  = mIn - mOut;
   const pctUsed  = mIn > 0 ? Math.min(Math.round(mOut / mIn * 100), 100) : (mOut > 0 ? 100 : 0);
@@ -116,24 +125,7 @@ export function renderBeranda() {
 
   renderSummary(m, y, mIn, mOut);
 
-// 1. Hitung dulu berapa total uang yang sudah kita keluarkan untuk bayar CC
-  const totalLunasCC = Object.values(window.ccPayments || {}).reduce((s, p) => s + (Number(p.nominal) || 0), 0);
-
-  // 2. Ganti fungsi calcBal lama dengan versi ini
-  const calcBal = (met) => {
-    // Hitung pemasukan - pengeluaran dasar untuk metode tersebut
-    const basePemasukan = window.data.filter(r => r.metode === met && r.jenis === 'Pemasukan').reduce((s, r) => s + Number(r.nominal), 0);
-    const basePengeluaran = window.data.filter(r => r.metode === met && r.jenis === 'Pengeluaran' && r.kategori !== 'Bayar Tagihan CC').reduce((s, r) => s + Number(r.nominal), 0);
-    
-    let saldo = basePemasukan - basePengeluaran;
-
-    // KHUSUS untuk QRIS/Bank, kita potong lagi dengan uang yang dipakai bayar CC
-    if (met === 'QRIS/Transfer') {
-      saldo = saldo - totalLunasCC;
-    }
-    
-    return saldo;
-  };
+  // calcBal sudah dipindah ke scope module (dipakai renderSummary & renderBeranda)
 
   document.getElementById('b-accounts').innerHTML = `
     <div class="stat-card c-purple">
