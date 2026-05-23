@@ -1,0 +1,256 @@
+/* ════════════════════════════════════════════
+   onboarding.css — Welcome Modal & Empty State
+   ════════════════════════════════════════════ */
+
+/* ── OVERLAY ──────────────────────────────── */
+.ob-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;        /* muncul dari bawah di mobile */
+  justify-content: center;
+  z-index: 999999 !important;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  padding: 0 0 env(safe-area-inset-bottom, 0);
+  transform: none !important;
+  will-change: opacity;
+}
+
+@media (min-width: 600px) {
+  .ob-overlay {
+    align-items: center;        /* tengah di desktop */
+  }
+}
+
+.ob-overlay.ob-visible {
+  opacity: 1;
+}
+
+/* ── CARD ─────────────────────────────────── */
+.ob-card {
+  background: var(--surface, #fff);
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  max-width: 480px;
+  padding: 32px 24px 28px;
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18);
+  transform: translateY(40px);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (min-width: 600px) {
+  .ob-card {
+    border-radius: 24px;
+    transform: translateY(20px) scale(0.96);
+    max-width: 420px;
+    margin: 16px;
+  }
+}
+
+.ob-overlay.ob-visible .ob-card {
+  transform: translateY(0) scale(1);
+}
+
+/* ── BODY ─────────────────────────────────── */
+.ob-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.ob-icon {
+  font-size: 52px;
+  line-height: 1;
+  transition: opacity 0.2s ease;
+}
+
+.ob-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text, #111);
+  margin: 0;
+  line-height: 1.3;
+  transition: opacity 0.2s ease;
+}
+
+.ob-desc {
+  font-size: 14px;
+  color: var(--text2, #555);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 340px;
+  transition: opacity 0.2s ease;
+}
+
+.ob-desc strong {
+  color: var(--accent, #4f46e5);
+  font-weight: 600;
+}
+
+/* ── FADE-IN ANIMATION ────────────────────── */
+.ob-fade-in {
+  animation: obFadeSlide 0.28s ease forwards;
+}
+
+@keyframes obFadeSlide {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── DOTS ─────────────────────────────────── */
+.ob-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.ob-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border, #ddd);
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.ob-dot-active {
+  background: var(--accent, #4f46e5);
+  transform: scale(1.3);
+}
+
+/* ── FOOTER BUTTONS ───────────────────────── */
+.ob-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ob-btn-skip {
+  background: none;
+  border: none;
+  color: var(--text2, #888);
+  font-size: 14px;
+  font-family: var(--font, sans-serif);
+  cursor: pointer;
+  padding: 10px 4px;
+  flex-shrink: 0;
+}
+
+.ob-btn-skip:hover {
+  color: var(--text, #111);
+}
+
+.ob-btn-next {
+  flex: 1;
+  background: var(--accent, #4f46e5);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font, sans-serif);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.ob-btn-next:hover  { background: var(--accent-hover, #4338ca); }
+.ob-btn-next:active { transform: scale(0.97); }
+
+/* ── EMPTY STATE DIPERKAYA ────────────────── */
+.ob-empty-label {
+  font-size: 12px;
+  color: var(--text2, #888);
+  text-align: center;
+  margin: 8px 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ob-dummy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 10px;
+  opacity: 0.7;
+}
+
+.ob-dummy-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface2, #f5f5f7);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.ob-dummy-icon {
+  font-size: 20px;
+  width: 32px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.ob-dummy-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ob-dummy-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text, #111);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ob-dummy-cat {
+  font-size: 11px;
+  color: var(--text2, #888);
+}
+
+.ob-dummy-nominal {
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ob-empty-cta {
+  font-size: 13px;
+  color: var(--text2, #777);
+  text-align: center;
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+
+.ob-empty-cta strong {
+  color: var(--accent, #4f46e5);
+}
+
+/* ── DARK MODE ────────────────────────────── */
+.dark-theme .ob-card {
+  background: var(--surface, #1c1c1e);
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.45);
+}
+
+.dark-theme .ob-dummy-item {
+  background: var(--surface2, #2c2c2e);
+}
