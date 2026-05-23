@@ -203,6 +203,8 @@ body {
 .nav-tab.active       { background:var(--accent-bg); color:var(--accent); }
 .nav-tab.danger       { color:var(--red) !important; border-top:1px solid var(--border); }
 .nav-right            { display:flex; align-items:center; gap:8px; flex-shrink:0; margin-left:auto; }
+.nav-desktop-tab.active { background:var(--accent); border-color:var(--accent); color:#fff !important; }
+.nav-tab-catat          { background:var(--accent); border-color:var(--accent); color:#fff !important; }
 
 /* ── EXPORT DROPDOWN ─────────────────────── */
 .export-wrap          { position:relative; }
@@ -237,7 +239,6 @@ body {
 }
 .btn-theme:hover,
 .btn-icon:hover       { background:rgba(255,255,255,0.2); }
-#btn-refresh:disabled { opacity:.6; cursor:not-allowed; }
 .btn-add {
   background:var(--accent); color:#fff; border:none;
   padding:8px 16px; border-radius:99px; font-size:13px;
@@ -1366,16 +1367,6 @@ body.dark-theme .bn-tab.active {
   }
   .nav-desktop-tab:hover {
     background: rgba(255,255,255,0.18);
-    color: #fff;
-  }
-  .nav-tab-catat {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-  .nav-desktop-tab.active {
-    background: var(--accent);
-    border-color: var(--accent);
     color: #fff;
   }
 }
