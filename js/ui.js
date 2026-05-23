@@ -152,7 +152,7 @@ function _updateBottomNav(page) {
   // Desktop nav tabs
   const DNT_MAP = { beranda:'dnt-beranda', transaksi:'dnt-transaksi', analitik:'dnt-analitik', cc:'dnt-cc', input:'dnt-input' };
   document.querySelectorAll('.nav-desktop-tab').forEach(t => {
-    if (t.id !== 'dnt-input') t.classList.remove('active');
+    t.classList.remove('active');
   });
   const dntId = DNT_MAP[page];
   if (dntId) {
