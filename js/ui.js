@@ -252,8 +252,16 @@ export function refreshYearOptions() {
   });
 }
 
+// ── HELP BUTTON (tombol ? — buka ulang onboarding kapan saja) ─
+export function openHelp() {
+  import('./onboarding.js').then(({ showWelcomeModal }) => {
+    showWelcomeModal(window._currentUser?.uid, window._db);
+  });
+}
+
 // Expose ke window untuk inline HTML onclick
 window.showModal        = showModal;
+window.openHelp         = openHelp;
 window.closeModal       = closeModal;
 window.openPrivacy      = openPrivacy;
 window.closePrivacy     = closePrivacy;
