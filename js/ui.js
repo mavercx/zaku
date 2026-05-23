@@ -3,6 +3,7 @@
 // ════════════════════════════════════════════
 
 import { renderChart } from "./render.js";
+import { showWelcomeModal } from "./onboarding.js";
 
 // ── MODAL KONFIRMASI ──────────────────────────────────────────
 let _modalCallback = null;
@@ -254,9 +255,7 @@ export function refreshYearOptions() {
 
 // ── HELP BUTTON (tombol ? — buka ulang onboarding kapan saja) ─
 export function openHelp() {
-  import('./onboarding.js').then(({ showWelcomeModal }) => {
-    showWelcomeModal(window._currentUser?.uid, window._db);
-  });
+  showWelcomeModal(window._currentUser?.uid, window._db);
 }
 
 // Expose ke window untuk inline HTML onclick
