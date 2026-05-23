@@ -1,5 +1,5 @@
 // Ganti versi ini setiap deploy agar cache lama langsung invalid
-const CACHE_NAME = 'zaku-v3';
+const CACHE_NAME = 'zaku-v4';
 const PRECACHE = ['/', '/index.html'];
 
 self.addEventListener('install', event => {
