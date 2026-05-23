@@ -91,3 +91,15 @@ window._onDataReady = () => {
   // Refresh year options berdasarkan data aktual dari Firebase
   if (typeof window.refreshYearOptions === 'function') window.refreshYearOptions();
 };
+
+// ── REFRESH DATA ──────────────────────────────────────────────
+window.doRefresh = async () => {
+  const btn = document.getElementById('btn-refresh');
+  if (btn) { btn.style.animation = 'spin 0.6s linear infinite'; btn.disabled = true; }
+  try {
+    const { loadDataFromFirebase } = await import('./data.js');
+    await loadDataFromFirebase(uid(), db);
+  } finally {
+    if (btn) { btn.style.animation = ''; btn.disabled = false; }
+  }
+};
