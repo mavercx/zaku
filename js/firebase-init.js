@@ -30,6 +30,7 @@ const provider = new GoogleAuthProvider();
 
 export { db };
 export let currentUser = null;
+window._db = db; // agar openHelp di ui.js bisa akses db
 
 // ── AUTH STATE ────────────────────────────────────────────────
 onAuthStateChanged(auth, async (user) => {
