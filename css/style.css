@@ -202,7 +202,7 @@ body {
 .nav-tab:hover,
 .nav-tab.active       { background:var(--accent-bg); color:var(--accent); }
 .nav-tab.danger       { color:var(--red) !important; border-top:1px solid var(--border); }
-.nav-right            { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.nav-right            { display:flex; align-items:center; gap:8px; flex-shrink:0; margin-left:auto; }
 
 /* ── EXPORT DROPDOWN ─────────────────────── */
 .export-wrap          { position:relative; }
