@@ -74,8 +74,8 @@ export function showWelcomeModal(uid, db) {
   overlay.innerHTML = _buildModal();
   document.body.appendChild(overlay);
 
-  // Animasi masuk
-  requestAnimationFrame(() => overlay.classList.add('ob-visible'));
+  // Double rAF: pastikan browser sudah render state awal (opacity:0) sebelum transisi
+  requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add('ob-visible')));
 
   _bindEvents(uid, db);
   _renderSlide();
