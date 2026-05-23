@@ -11,6 +11,8 @@ import { getFirestore }
 import { loadDataFromFirebase }          from "./data.js";
 import { openInstall, maybeShowSupport, showModal } from "./ui.js";
 import { hideLoading, showToast, showLoading }      from "./utils.js";
+// ── ONBOARDING ────────────────────────────────────────────────
+import { isNewUser, showWelcomeModal, enrichEmptyState } from "./onboarding.js";
 
 const firebaseConfig = {
   apiKey:            "AIzaSyD8p2vn3_VSBgtKAQJThv6i-yTSR430wuk",
@@ -37,11 +39,21 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById('login-page').style.display  = 'none';
     document.getElementById('app-content').style.display = 'block';
     await loadDataFromFirebase(user.uid, db);
-    if (!localStorage.getItem('dompetku_install_shown')) {
+
+    // ── Cek onboarding user baru ──────────────────────────────
+    const newUser = await isNewUser(user.uid, db);
+    if (newUser) {
+      // User pertama kali login: tampilkan welcome modal
+      // Install prompt & support ditangani di dalam onboarding setelah modal ditutup
+      setTimeout(() => showWelcomeModal(user.uid, db), 800);
+      enrichEmptyState(); // perkaya empty state dengan contoh dummy
+    } else if (!localStorage.getItem('dompetku_install_shown')) {
       setTimeout(() => openInstall(), 2000);
     } else {
       maybeShowSupport();
     }
+    // ─────────────────────────────────────────────────────────
+
   } else {
     currentUser         = null;
     window._currentUser = null;
