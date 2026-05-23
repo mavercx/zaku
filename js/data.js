@@ -97,21 +97,23 @@ export async function simpan(db, uid) {
       const idx = window.data.findIndex(d => d.id === id);
       record.id = id;
       if (idx !== -1) window.data[idx] = record;
-      showToast('Transaksi diperbarui!');
     } else {
       const ref = await addDoc(collection(db, 'users', uid, 'transactions'), record);
       record.id = ref.id;
       window.data.push(record);
-      showToast('Transaksi tersimpan!');
     }
     updateAutocomplete();
-    resetForm();
     renderAll();
     hideLoading();
   } catch (e) {
-    showToast('Gagal menyimpan', 'error');
+    console.error('simpan error:', e);
     hideLoading();
+    showToast('Gagal menyimpan: ' + (e?.message || e), 'error');
+    return; // jangan reset form kalau gagal
   }
+  // Di sini sudah pasti sukses — reset form & tampilkan notif
+  resetForm();
+  showToast(isEdit ? 'Transaksi diperbarui!' : 'Transaksi tersimpan!');
 }
 
 // ── HAPUS TRANSAKSI ───────────────────────────────────────────
@@ -177,7 +179,8 @@ export function resetForm() {
   document.getElementById('f-ket').value              = '';
   document.getElementById('f-cc').checked             = false;
   document.getElementById('f-recur').checked          = false;
-  window.goTo('beranda', 'Beranda');
+  // Navigasi ke beranda hanya jika dipanggil langsung (bukan dari simpan)
+  if (typeof window.goTo === 'function') window.goTo('beranda', 'Beranda');
 }
 
 // ── SIMPAN BUDGET ─────────────────────────────────────────────
