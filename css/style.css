@@ -315,7 +315,7 @@ input:focus           { border-color:var(--accent); box-shadow:0 0 0 3px var(--a
 .tren-grid            { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
 
 /* ── ROW ITEMS ───────────────────────────── */
-.row-item             { display:flex; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid var(--border); }
+.row-item             { display:flex; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid var(--border); width:100%; box-sizing:border-box; }
 .row-item:last-child  { border-bottom:none; }
 .row-icon             { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
 .row-info             { flex:1; min-width:0; }
@@ -1180,9 +1180,15 @@ canvas#katTrendChart { min-height: 160px; }
 .bn-tab.active .bn-icon {
   transform: translateY(-2px);
 }
+.bn-tab.active .bn-label {
+  font-weight: 700;
+}
 /* Dark theme override */
+body.dark-theme .bn-tab {
+  color: var(--text3);
+}
 body.dark-theme .bn-tab.active {
-  color: var(--accent) !important;
+  color: #fff !important;
 }
 .bn-icon {
   width: 22px; height: 22px;
@@ -1285,6 +1291,10 @@ body.dark-theme .bn-tab.active {
   border-bottom: 1px solid var(--border);
   background: var(--surface);
   will-change: transform;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  flex: 1;
 }
 /* Override original row-item padding since inner now handles it */
 .row-item > .row-icon,
@@ -1373,7 +1383,6 @@ body.dark-theme .bn-tab.active {
     background: var(--accent) !important;
     border-color: var(--accent) !important;
     color: #fff !important;
-    opacity: 1;
   }
 }
 
