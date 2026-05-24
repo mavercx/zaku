@@ -4,6 +4,16 @@
 
 import { MONTHS, ICONS, fmt, fmtS, getCCPeriod } from "./utils.js";
 
+// ── HELPER: escape HTML untuk mencegah XSS ───────────────────
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 let trendChart; // instance Chart.js
 
 // ── HELPERS INTERNAL ─────────────────────────────────────────
@@ -37,7 +47,7 @@ function barRowsHTML(obj, color = 'var(--accent)') {
   const max = sorted[0][1];
   return sorted.map(([k, v]) => `
     <div class="bar-row">
-      <div class="bar-label">${ICONS[k] || '•'} ${k}</div>
+      <div class="bar-label">${ICONS[k] || '•'} ${esc(k)}</div>
       <div class="bar-track">
         <div class="bar-fill" style="width:${Math.round(v / max * 100)}%;background:${color}"></div>
       </div>
@@ -157,13 +167,13 @@ export function renderBeranda() {
     <div class="row-item">
       <div class="row-icon" style="background:var(--surface2)">${ICONS[r.kategori] || '📌'}</div>
       <div class="row-info">
-        <div class="row-name">${r.keterangan}</div>
-        <div class="row-meta">${r.kategori} · ${r.tanggal}</div>
+        <div class="row-name">${esc(r.keterangan)}</div>
+        <div class="row-meta">${esc(r.kategori)} · ${esc(r.tanggal)}</div>
       </div>
       <div class="row-right">
         <div class="row-amount ${r.jenis === 'Pemasukan' ? 'in' : 'out'}">${fmt(r.nominal)}</div>
         <div class="row-actions">
-          <button class="btn-action" onclick="copyToForm('${r.id}')">📋</button>
+          <button class="btn-action" onclick="copyToForm('${esc(r.id)}')">📋</button>
         </div>
       </div>
     </div>`
@@ -193,14 +203,14 @@ export function renderTransaksi() {
       <div class="row-swipe-inner">
         <div class="row-icon" style="background:var(--surface2)">${ICONS[r.kategori] || '📌'}</div>
         <div class="row-info">
-          <div class="row-name">${r.keterangan}</div>
-          <div class="row-meta">${r.kategori} · ${r.tanggal}</div>
+          <div class="row-name">${esc(r.keterangan)}</div>
+          <div class="row-meta">${esc(r.kategori)} · ${esc(r.tanggal)}</div>
         </div>
         <div class="row-right">
           <div class="row-amount ${r.jenis === 'Pemasukan' ? 'in' : 'out'}">${fmt(r.nominal)}</div>
           <div class="row-actions">
-            <button class="btn-action" onclick="editRecord('${r.id}')">✏️</button>
-            <button class="btn-action" onclick="hapusRecord('${r.id}')">🗑️</button>
+            <button class="btn-action" onclick="editRecord('${esc(r.id)}')">✏️</button>
+            <button class="btn-action" onclick="hapusRecord('${esc(r.id)}')">🗑️</button>
           </div>
         </div>
       </div>
@@ -240,8 +250,8 @@ export function renderAnalitik() {
   document.getElementById('y-top-list').innerHTML = top5.map(r => `
     <div class="row-item">
       <div class="row-info">
-        <div class="row-name">${r.keterangan}</div>
-        <div class="row-meta">${r.tanggal}</div>
+        <div class="row-name">${esc(r.keterangan)}</div>
+        <div class="row-meta">${esc(r.tanggal)}</div>
       </div>
       <div class="row-right row-amount out">-${fmt(r.nominal)}</div>
     </div>`
@@ -410,7 +420,7 @@ function renderPerbandingan(m, y) {
     const wP    = Math.round(p / maxVal * 100);
     return `
       <div class="perbandingan-row">
-        <div class="perbandingan-kat">${ICONS[kat] || '•'} ${kat}</div>
+        <div class="perbandingan-kat">${ICONS[kat] || '•'} ${esc(kat)}</div>
         <div class="perbandingan-bars">
           <div class="perbandingan-bar-wrap">
             <div class="perbandingan-bar prev" style="width:${wP}%"></div>
@@ -452,9 +462,9 @@ export function renderKategoriTrendPicker(yearOverride) {
   // Buat chips kalau belum ada
   if (!el.querySelector('.kat-chip')) {
     el.innerHTML = cats.map((k, i) => `
-      <button class="kat-chip" data-kat="${k}"
+      <button class="kat-chip" data-kat="${esc(k)}"
         style="--chip-color:${KAT_COLORS[i % KAT_COLORS.length]}"
-        onclick="toggleKatChip(this)">${ICONS[k] || ''} ${k}</button>`
+        onclick="toggleKatChip(this)">${ICONS[k] || ''} ${esc(k)}</button>`
     ).join('');
   }
 
@@ -528,8 +538,10 @@ window.toggleKatChip = function(el) {
 
 // ── RENDER CHART (Tren Tahunan Bar) ──────────────────────────
 export function renderChart() {
-  const y   = parseInt(document.getElementById('a-year').value);
-  const ctx = document.getElementById('trendChart').getContext('2d');
+  const y      = parseInt(document.getElementById('a-year').value);
+  const canvas = document.getElementById('trendChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
   const inD = MONTHS.map(m =>
     window.data.filter(d => d.bulan === m && parseInt(d.tahun) === y && d.jenis === 'Pemasukan')
                .reduce((s, r) => s + r.nominal, 0)
@@ -576,7 +588,7 @@ export function renderBudget() {
     return `
       <div class="budget-item">
         <div class="budget-header">
-          <span>${kat}</span>
+          <span>${esc(kat)}</span>
           <span style="color:${color}">${fmt(spent)} / ${fmt(limit)}</span>
         </div>
         <div class="bar-track">
@@ -663,8 +675,8 @@ export function renderCC() {
     <div class="row-item">
       <div class="row-icon" style="background:var(--surface2)">${ICONS[r.kategori] || '💳'}</div>
       <div class="row-info">
-        <div class="row-name">${r.keterangan}</div>
-        <div class="row-meta">${r.kategori} · ${r.tanggal}</div>
+        <div class="row-name">${esc(r.keterangan)}</div>
+        <div class="row-meta">${esc(r.kategori)} · ${esc(r.tanggal)}</div>
       </div>
       <div class="row-right row-amount out">-${fmt(r.nominal)}</div>
     </div>`)
@@ -870,12 +882,19 @@ window.renderCCPaymentCalendar = renderCCPaymentCalendar;
 // ── RENDER KATEGORI LIST (Pengaturan) ─────────────────────────
 export function renderCategoryList() {
   const render = (type, elId) => {
-    document.getElementById(elId).innerHTML = window.userCategories[type].map(k => `
+    const el = document.getElementById(elId);
+    el.innerHTML = window.userCategories[type].map(k => `
       <div class="tag-item">
-        ${k}
-        <span class="tag-del" onclick="hapusKategori('${type}','${k}')">×</span>
+        ${esc(k)}
+        <span class="tag-del" data-type="${esc(type)}" data-name="${esc(k)}">×</span>
       </div>`
     ).join('');
+    // Pakai event listener agar nilai asli (termasuk &) terkirim dengan benar
+    el.querySelectorAll('.tag-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        window.hapusKategori(btn.dataset.type, btn.dataset.name);
+      });
+    });
   };
   render('Pemasukan',   'kat-list-pemasukan');
   render('Pengeluaran', 'kat-list-pengeluaran');
@@ -887,15 +906,15 @@ export function updateKategoriDropdown() {
   const cats = window.userCategories[j] || [];
 
   document.getElementById('f-kategori').innerHTML =
-    cats.map(k => `<option value="${k}">${k}</option>`).join('');
+    cats.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
 
   const allCats = [...window.userCategories.Pemasukan, ...window.userCategories.Pengeluaran];
   document.getElementById('t-kat').innerHTML =
     '<option value="">Semua Kategori</option>' +
-    allCats.map(k => `<option value="${k}">${k}</option>`).join('');
+    allCats.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
 
   document.getElementById('bg-kategori').innerHTML =
-    window.userCategories.Pengeluaran.map(k => `<option value="${k}">${k}</option>`).join('');
+    window.userCategories.Pengeluaran.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
 
   document.getElementById('wrap-cc').style.display = j === 'Pemasukan' ? 'none' : 'flex';
 }
