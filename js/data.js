@@ -7,8 +7,7 @@ import {
   deleteDoc, doc, setDoc, getDoc
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-import { MONTHS }                          from "./utils.js";
-import { showToast, showLoading, hideLoading } from "./utils.js";
+import { MONTHS, showToast, showLoading, hideLoading } from "./utils.js";
 import { renderAll, updateKategoriDropdown, renderCategoryList } from "./render.js";
 import { showModal }                       from "./ui.js";
 
@@ -86,9 +85,9 @@ export async function simpan(db, uid) {
     recurring: document.getElementById('f-recur').checked,
   };
 
-  if (!record.tanggal || !record.nominal || !record.keterangan) {
-    return showToast('Harap isi semua data!', 'error');
-  }
+  if (!record.tanggal)    return showToast('Tanggal belum diisi!', 'error');
+  if (!record.keterangan) return showToast('Keterangan belum diisi!', 'error');
+  if (!record.nominal)    return showToast('Nominal belum diisi!', 'error');
 
   showLoading();
   try {
@@ -123,7 +122,7 @@ export function hapusRecord(id, db, uid) {
     try {
       await deleteDoc(doc(db, 'users', uid, 'transactions', id));
       window.data = window.data.filter(d => d.id !== id);
-      showToast('Transaksi dihapus!', 'error');
+      showToast('Transaksi dihapus!');
       renderAll();
       updateAutocomplete();
       hideLoading();
@@ -171,7 +170,7 @@ export function copyToForm(id) {
 }
 
 // ── RESET FORM ────────────────────────────────────────────────
-export function resetForm() {
+export function resetForm(navigasi = true) {
   document.getElementById('form-title').textContent   = 'Catat Transaksi';
   document.getElementById('f-id').value               = '';
   document.getElementById('f-nominal').value          = '';
@@ -179,8 +178,7 @@ export function resetForm() {
   document.getElementById('f-ket').value              = '';
   document.getElementById('f-cc').checked             = false;
   document.getElementById('f-recur').checked          = false;
-  // Navigasi ke beranda hanya jika dipanggil langsung (bukan dari simpan)
-  if (typeof window.goTo === 'function') window.goTo('beranda', 'Beranda');
+  if (navigasi && typeof window.goTo === 'function') window.goTo('beranda', 'Beranda');
 }
 
 // ── SIMPAN BUDGET ─────────────────────────────────────────────
@@ -205,6 +203,8 @@ export async function simpanBudget(db, uid) {
 export async function simpanPengaturanCC(db, uid) {
   const lim = parseFloat(document.getElementById('s-cc-limit').value);
   const cut = parseInt(document.getElementById('s-cc-cutoff').value);
+  if (!lim || lim <= 0)          return showToast('Limit CC tidak valid!', 'error');
+  if (!cut || cut < 1 || cut > 28) return showToast('Tanggal cutoff harus antara 1–28', 'error');
   showLoading();
   try {
     window.settings.ccLimit  = lim;
@@ -231,28 +231,43 @@ export async function tambahKategori(db, uid) {
   if (window.userCategories[type].includes(name)) return showToast('Kategori sudah ada', 'error');
   showLoading();
   window.userCategories[type].push(name);
-  await setDoc(
-    doc(db, 'users', uid, 'settings', 'config'),
-    { ...window.settings, categories: window.userCategories }
-  );
-  document.getElementById('new-kat-name').value = '';
-  updateKategoriDropdown();
-  renderCategoryList();
-  showToast('Kategori ditambahkan');
-  hideLoading();
+  try {
+    await setDoc(
+      doc(db, 'users', uid, 'settings', 'config'),
+      { ...window.settings, categories: window.userCategories }
+    );
+    document.getElementById('new-kat-name').value = '';
+    updateKategoriDropdown();
+    renderCategoryList();
+    showToast('Kategori ditambahkan');
+    hideLoading();
+  } catch (e) {
+    // Rollback optimistic update kalau Firebase gagal
+    window.userCategories[type] = window.userCategories[type].filter(k => k !== name);
+    showToast('Gagal menambah kategori', 'error');
+    hideLoading();
+  }
 }
 
 export function hapusKategori(type, name, db, uid) {
   showModal(`Hapus kategori "${name}"?`, 'Transaksi yang sudah menggunakan kategori ini tidak terpengaruh.', async () => {
     showLoading();
     window.userCategories[type] = window.userCategories[type].filter(k => k !== name);
-    await setDoc(
-      doc(db, 'users', uid, 'settings', 'config'),
-      { ...window.settings, categories: window.userCategories }
-    );
-    updateKategoriDropdown();
-    renderCategoryList();
-    hideLoading();
+    try {
+      await setDoc(
+        doc(db, 'users', uid, 'settings', 'config'),
+        { ...window.settings, categories: window.userCategories }
+      );
+      updateKategoriDropdown();
+      renderCategoryList();
+      showToast('Kategori dihapus');
+      hideLoading();
+    } catch (e) {
+      // Rollback — kembalikan kategori yang gagal dihapus
+      window.userCategories[type].push(name);
+      showToast('Gagal menghapus kategori', 'error');
+      hideLoading();
+    }
   });
 }
 
@@ -343,7 +358,7 @@ export async function batalLunasiCC(db, uid, periodKey) {
 
 // ── AUTOCOMPLETE ──────────────────────────────────────────────
 export function updateAutocomplete() {
-  const unique = [...new Set(window.data.map(d => d.keterangan))];
+  const unique = [...new Set(window.data.map(d => d.keterangan).filter(k => k && k.trim()))];
   document.getElementById('histori-ket').innerHTML =
     unique.map(k => `<option value="${k}">`).join('');
 }
