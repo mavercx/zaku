@@ -113,20 +113,24 @@ export function toggleMenu() { document.getElementById('nav-dropdown').classList
 
 // Tutup dropdown jika klik di luar
 window.addEventListener('click', (e) => {
-  if (!e.target.closest('.nav-menu-wrap')) document.getElementById('nav-dropdown').classList.remove('show');
-  if (!e.target.closest('.export-wrap'))   document.getElementById('export-dropdown').classList.remove('show');
+  const navDd  = document.getElementById('nav-dropdown');
+  const expDd  = document.getElementById('export-dropdown');
+  if (!e.target.closest('.nav-menu-wrap') && navDd) navDd.classList.remove('show');
+  if (!e.target.closest('.export-wrap')   && expDd) expDd.classList.remove('show');
 });
 
 // ── NAVIGASI HALAMAN ──────────────────────────────────────────
 export function goTo(page, title) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
+  const pageEl = document.getElementById('page-' + page);
+  if (pageEl) pageEl.classList.add('active');
 
   const tabs = ['beranda', 'transaksi', 'analitik', 'budget', 'cc', 'pengaturan'];
   const idx  = tabs.indexOf(page);
   if (idx >= 0) {
-    document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+    const navTab = document.querySelectorAll('.nav-tab')[idx];
+    if (navTab) navTab.classList.add('active');
     const menuText = document.getElementById('btn-menu-text');
     if (menuText) menuText.textContent = title + ' ▾';
   }
