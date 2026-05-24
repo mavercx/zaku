@@ -355,8 +355,7 @@ export function syncFieldsFromHistory(val) {
     updateKategoriDropdown();
     document.getElementById('f-kategori').value        = match.kategori;
     document.getElementById('f-metode').value          = match.metode;
-    document.getElementById('f-nominal').value         = match.nominal;
-    document.getElementById('f-nominal-display').value = Number(match.nominal).toLocaleString('id-ID');
+    // Nominal sengaja tidak diisi — user mengisi sendiri
     // Gunakan checkAutoCC agar checkbox CC selalu konsisten dengan metode + jenis
     if (typeof window.checkAutoCC === 'function') window.checkAutoCC();
     showToast('Terisi otomatis dari riwayat!');
