@@ -135,7 +135,8 @@ export function goTo(page, title) {
     if (menuText) menuText.textContent = title + ' ▾';
   }
 
-  document.getElementById('nav-dropdown').classList.remove('show');
+  const navDd = document.getElementById('nav-dropdown');
+  if (navDd) navDd.classList.remove('show');
   if (page === 'analitik') requestAnimationFrame(() => renderChart());
   window.scrollTo(0, 0);
 
