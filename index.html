@@ -251,19 +251,23 @@
     </div>
     <select id="t-month" style="display:none" onchange="syncPeriod('t-month')"></select>
     <select id="t-year"  style="display:none" onchange="syncPeriod('t-year')"></select>
-    <!-- Filter pill -->
-    <div class="filter-pill-group">
-      <button class="filter-pill active" onclick="setJenisFilter('')">Semua</button>
-      <button class="filter-pill" onclick="setJenisFilter('Pengeluaran')">Pengeluaran</button>
-      <button class="filter-pill" onclick="setJenisFilter('Pemasukan')">Pemasukan</button>
+    <!-- Filter bar: pill kiri + icon filter kanan -->
+    <div class="filter-bar-row">
+      <div class="filter-pill-group">
+        <button class="filter-pill active" onclick="setJenisFilter('')">Semua</button>
+        <button class="filter-pill" onclick="setJenisFilter('Pengeluaran')">Keluar</button>
+        <button class="filter-pill" onclick="setJenisFilter('Pemasukan')">Masuk</button>
+      </div>
+      <div class="filter-kat-wrap">
+        <select id="t-kat" onchange="renderTransaksi()"><option value="">Semua</option></select>
+        <svg class="filter-kat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      </div>
     </div>
-    <!-- Hidden select — tetap dipakai oleh renderTransaksi() -->
     <select id="t-jenis" style="display:none" onchange="renderTransaksi()">
       <option value="">Semua Jenis</option>
       <option value="Pengeluaran">Pengeluaran</option>
       <option value="Pemasukan">Pemasukan</option>
     </select>
-    <select id="t-kat" onchange="renderTransaksi()"><option value="">Semua Kategori</option></select>
     <div id="t-list" data-swipe-delete></div>
   </div>
 
