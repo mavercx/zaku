@@ -299,52 +299,12 @@ body.dark-theme .period-nav { background: var(--surface); }
 body.dark-theme .period-nav-btn { color: rgba(255,255,255,0.5); }
 body.dark-theme .period-nav-btn:hover { color: var(--accent); }
 
-/* ── FILTER PILL (halaman Transaksi) ─────────── */
+/* ── FILTER BAR (halaman Transaksi) ─────────── */
 .filter-bar-row {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 16px;
-}
-.filter-pill-group {
-  display: flex;
-  gap: 6px;
-  flex: 1;
-}
-.filter-pill {
-  flex: 1;
-  padding: 7px 0;
-  border-radius: 10px;
-  border: 1.5px solid var(--border);
-  background: var(--surface2);
-  color: var(--text2);
-  font-family: var(--font);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.18s;
-  -webkit-tap-highlight-color: transparent;
-  white-space: nowrap;
-}
-.filter-pill.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-.filter-pill:not(.active):active {
-  background: var(--accent-bg);
-  border-color: var(--accent);
-  color: var(--accent);
-}
-body.dark-theme .filter-pill {
-  background: var(--surface2);
-  color: rgba(255,255,255,0.5);
-  border-color: var(--border);
-}
-body.dark-theme .filter-pill.active {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
 }
 
 /* Dropdown kategori — compact di kanan */
@@ -355,17 +315,18 @@ body.dark-theme .filter-pill.active {
 .filter-kat-wrap select {
   appearance: none;
   -webkit-appearance: none;
-  padding: 7px 28px 7px 10px;
+  padding: 8px 28px 8px 12px;
   border-radius: 10px;
   border: 1.5px solid var(--border);
   background: var(--surface2);
-  color: var(--text2);
+  color: var(--text);
   font-size: 12px;
   font-weight: 600;
   font-family: var(--font);
   cursor: pointer;
-  max-width: 110px;
+  width: 100%;
   outline: none;
+  transition: border-color 0.15s;
 }
 .filter-kat-wrap select:focus {
   border-color: var(--accent);
@@ -380,7 +341,7 @@ body.dark-theme .filter-pill.active {
 }
 body.dark-theme .filter-kat-wrap select {
   background: var(--surface2);
-  color: rgba(255,255,255,0.5);
+  color: var(--text);
   border-color: var(--border);
 }
 select, input {
