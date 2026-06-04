@@ -165,12 +165,6 @@ function _updateBottomNav(page) {
     const el = document.getElementById(dntId);
     if (el) el.classList.add('active');
   }
-
-  // FAB: sembunyikan di halaman input
-  const fab = document.getElementById('fab-catat');
-  if (fab) fab.style.transform = page === 'input'
-    ? 'translateX(-50%) scale(0)'
-    : 'translateX(-50%) scale(1)';
 }
 
 // Expose supaya ux.js bisa pakai tanpa polling
