@@ -124,7 +124,11 @@ export function goTo(page, title) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   const pageEl = document.getElementById('page-' + page);
-  if (pageEl) pageEl.classList.add('active');
+  if (pageEl) {
+    // Force reflow agar animasi re-trigger walau halaman sama
+    void pageEl.offsetWidth;
+    pageEl.classList.add('active');
+  }
 
   const tabs = ['beranda', 'transaksi', 'analitik', 'budget', 'cc', 'pengaturan'];
   const idx  = tabs.indexOf(page);
@@ -139,6 +143,14 @@ export function goTo(page, title) {
   if (navDd) navDd.classList.remove('show');
   if (page === 'analitik') requestAnimationFrame(() => renderChart());
   window.scrollTo(0, 0);
+
+  // Clear search saat meninggalkan halaman transaksi
+  if (page !== 'transaksi') {
+    const searchEl = document.getElementById('t-search');
+    const clearBtn = document.getElementById('t-search-clear');
+    if (searchEl && searchEl.value) { searchEl.value = ''; }
+    if (clearBtn) clearBtn.style.display = 'none';
+  }
 
   // ── Update bottom nav active state ──────────────────────────
   _updateBottomNav(page);
@@ -191,6 +203,11 @@ export function syncPeriod(sId) {
     const el = document.getElementById(`${p}-${type}`);
     if (el) el.value = val;
   });
+  // Clear search saat ganti periode agar tidak ada filter tersembunyi
+  const searchEl = document.getElementById('t-search');
+  const clearBtn = document.getElementById('t-search-clear');
+  if (searchEl) searchEl.value = '';
+  if (clearBtn) clearBtn.style.display = 'none';
   if (typeof window.updateAllPeriodLabels === 'function') window.updateAllPeriodLabels();
   window.renderAll();
 }
