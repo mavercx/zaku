@@ -251,23 +251,21 @@
     </div>
     <select id="t-month" style="display:none" onchange="syncPeriod('t-month')"></select>
     <select id="t-year"  style="display:none" onchange="syncPeriod('t-year')"></select>
-    <!-- Filter bar: pill kiri + icon filter kanan -->
+    <!-- Filter bar: dua dropdown sejajar -->
     <div class="filter-bar-row">
-      <div class="filter-pill-group">
-        <button class="filter-pill active" onclick="setJenisFilter('')">Semua</button>
-        <button class="filter-pill" onclick="setJenisFilter('Pengeluaran')">Keluar</button>
-        <button class="filter-pill" onclick="setJenisFilter('Pemasukan')">Masuk</button>
+      <div class="filter-kat-wrap" style="flex:1">
+        <select id="t-jenis" onchange="renderTransaksi()">
+          <option value="">Semua Jenis</option>
+          <option value="Pengeluaran">Pengeluaran</option>
+          <option value="Pemasukan">Pemasukan</option>
+        </select>
+        <svg class="filter-kat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-      <div class="filter-kat-wrap">
-        <select id="t-kat" onchange="renderTransaksi()"><option value="">Semua</option></select>
-        <svg class="filter-kat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      <div class="filter-kat-wrap" style="flex:1">
+        <select id="t-kat" onchange="renderTransaksi()"><option value="">Semua Kategori</option></select>
+        <svg class="filter-kat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
     </div>
-    <select id="t-jenis" style="display:none" onchange="renderTransaksi()">
-      <option value="">Semua Jenis</option>
-      <option value="Pengeluaran">Pengeluaran</option>
-      <option value="Pemasukan">Pemasukan</option>
-    </select>
     <div id="t-list" data-swipe-delete></div>
   </div>
 
@@ -511,14 +509,6 @@ if ('serviceWorker' in navigator) {
 const _MONTHS = ['Januari','Februari','Maret','April','Mei','Juni',
                  'Juli','Agustus','September','Oktober','November','Desember'];
 
-window.setJenisFilter = function(val) {
-  document.getElementById('t-jenis').value = val;
-  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-  const pills = document.querySelectorAll('.filter-pill');
-  const map = { '': 0, 'Pengeluaran': 1, 'Pemasukan': 2 };
-  if (pills[map[val]]) pills[map[val]].classList.add('active');
-  if (typeof window.renderTransaksi === 'function') window.renderTransaksi();
-};
 
 window.shiftPeriod = function(prefix, dir) {
   const mEl = document.getElementById(prefix + '-month');
