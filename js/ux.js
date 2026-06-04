@@ -264,28 +264,9 @@ document.addEventListener('touchstart', (e) => {
   }
 }, { passive: true });
 
-// ── 5. FAB ENTRANCE ──────────────────────────
-function initFAB() {
-  const fab = document.getElementById('fab-catat');
-  if (!fab) return;
-  // Animate in on load — SELALU include translateX(-50%) agar FAB tetap center
-  fab.style.transform = 'translateX(-50%) scale(0)';
-  fab.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
-  setTimeout(() => { fab.style.transform = 'translateX(-50%) scale(1)'; }, 400);
-
-  // Bounce on tap
-  fab.addEventListener('touchstart', () => {
-    fab.style.transform = 'translateX(-50%) scale(0.9)';
-  }, { passive: true });
-  fab.addEventListener('touchend', () => {
-    fab.style.transform = 'translateX(-50%) scale(1)';
-  }, { passive: true });
-}
-
 // ── INIT ──────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   initSwipePeriod();
-  initFAB();
   // swipe-to-delete init runs after app renders t-list
   setTimeout(initSwipeToDelete, 800);
 });
