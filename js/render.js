@@ -43,7 +43,7 @@ function ccBarHTML(total, limit, cutoffLabel = '') {
 
 function barRowsHTML(obj, color = 'var(--accent)') {
   const sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]);
-  if (!sorted.length) return '<div class="empty-state">Belum ada data</div>';
+  if (!sorted.length) return '<div class="empty-state">📭 Belum ada data periode ini</div>';
   const max = sorted[0][1];
   return sorted.map(([k, v]) => `
     <div class="bar-row">
@@ -129,11 +129,39 @@ export function renderBeranda() {
   const rows = window.data.filter(d => d.bulan === m && parseInt(d.tahun) === y);
 
   const mIn  = rows.filter(r => r.jenis === 'Pemasukan').reduce((s, r) => s + r.nominal, 0);
-  // Pengeluaran riil = semua pengeluaran bulan ini termasuk CC,
-  // kecuali "Bayar Tagihan CC" agar tidak dobel hitung
   const mOut = rows
     .filter(r => r.jenis === 'Pengeluaran' && r.kategori !== 'Bayar Tagihan CC')
     .reduce((s, r) => s + r.nominal, 0);
+
+  // ── Greeting + Insight ───────────────────────────────────────
+  const hour = new Date().getHours();
+  const salam = hour < 11 ? 'Selamat pagi' : hour < 15 ? 'Selamat siang' : hour < 18 ? 'Selamat sore' : 'Selamat malam';
+  const nama  = window._currentUser?.displayName?.split(' ')[0] || 'Kamu';
+
+  let insight = '';
+  if (!rows.length) {
+    insight = '📝 Belum ada transaksi bulan ini. Yuk mulai catat!';
+  } else if (mIn === 0) {
+    insight = '💡 Belum ada pemasukan bulan ini yang tercatat.';
+  } else {
+    const pct  = Math.round(mOut / mIn * 100);
+    const selisih = mIn - mOut;
+    // Cari kategori terbesar
+    const katMap = {};
+    rows.filter(r => r.jenis === 'Pengeluaran' && r.kategori !== 'Bayar Tagihan CC')
+        .forEach(r => { katMap[r.kategori] = (katMap[r.kategori] || 0) + r.nominal; });
+    const topKat = Object.entries(katMap).sort((a, b) => b[1] - a[1])[0];
+
+    if (pct >= 100)       insight = `⚠️ Pengeluaran bulan ini melebihi pemasukan sebesar ${fmtS(Math.abs(selisih))}.`;
+    else if (pct >= 80)   insight = `⚠️ Sudah ${pct}% dari pemasukan terpakai — hati-hati sisa bulan ini!`;
+    else if (topKat)      insight = `💡 Pengeluaran terbesar ada di <b>${esc(topKat[0])}</b> sebesar ${fmtS(topKat[1])} (${Math.round(topKat[1]/mOut*100)}%).`;
+    else                  insight = `✅ Keuangan bulan ini aman — sisa ${fmtS(selisih)}.`;
+  }
+
+  const greetEl = document.getElementById('b-greeting');
+  if (greetEl) greetEl.innerHTML = `
+    <div class="b-greeting-name">${salam}, <span>${esc(nama)}</span> 👋</div>
+    <div class="b-greeting-insight">${insight}</div>`;
 
   renderSummary(m, y, mIn, mOut);
 
@@ -164,7 +192,7 @@ export function renderBeranda() {
     .slice(0, 5);
 
   document.getElementById('b-recent').innerHTML = recent.map(r => `
-    <div class="row-item">
+    <div class="row-item ${r.jenis === 'Pemasukan' ? 'row-in' : 'row-out'}">
       <div class="row-icon" style="background:var(--surface2)">${ICONS[r.kategori] || '📌'}</div>
       <div class="row-info">
         <div class="row-name">${esc(r.keterangan)}</div>
@@ -177,7 +205,7 @@ export function renderBeranda() {
         </div>
       </div>
     </div>`
-  ).join('') || '<div class="empty-state">Belum ada aktivitas di Zaku</div>';
+  ).join('') || '<div class="empty-state">✏️ Belum ada transaksi — mulai catat sekarang!</div>';
 
   const ccRows  = window.data.filter(r => r.cc && getCCPeriod(r.tanggal).bulan === m && getCCPeriod(r.tanggal).tahun === y);
   const ccTotal = ccRows.reduce((s, r) => s + Number(r.nominal), 0);
@@ -188,20 +216,60 @@ export function renderBeranda() {
 
 // ── RENDER TRANSAKSI ──────────────────────────────────────────
 export function renderTransaksi() {
-  const m = document.getElementById('t-month').value;
-  const y = parseInt(document.getElementById('t-year').value);
-  const j = document.getElementById('t-jenis').value;
-  const k = document.getElementById('t-kat').value;
+  const m  = document.getElementById('t-month').value;
+  const y  = parseInt(document.getElementById('t-year').value);
+  const j  = document.getElementById('t-jenis').value;
+  const k  = document.getElementById('t-kat').value;
+  const sq = (document.getElementById('t-search')?.value || '').trim().toLowerCase();
+
+  // Toggle tombol clear
+  const clrBtn = document.getElementById('t-search-clear');
+  if (clrBtn) clrBtn.style.display = sq ? 'flex' : 'none';
 
   let rows = window.data.filter(d => d.bulan === m && parseInt(d.tahun) === y);
-  if (j) rows = rows.filter(r => r.jenis === j);
-  if (k) rows = rows.filter(r => r.kategori === k);
+  if (j)  rows = rows.filter(r => r.jenis === j);
+  if (k)  rows = rows.filter(r => r.kategori === k);
+  if (sq) rows = rows.filter(r =>
+    (r.keterangan || '').toLowerCase().includes(sq) ||
+    (r.kategori   || '').toLowerCase().includes(sq)
+  );
   rows = [...rows].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
 
   if (!rows.length) {
-    document.getElementById('t-list').innerHTML = '<div class="empty-state">Tidak ada data</div>';
+    const sqRaw = (document.getElementById('t-search')?.value || '').trim();
+    let msg  = '📭 Tidak ada transaksi bulan ini';
+    if (sqRaw)                         msg = `🔍 Tidak ada hasil untuk "${esc(sqRaw)}"`;
+    else if (j === 'Pengeluaran' && k) msg = `📭 Tidak ada pengeluaran untuk "${esc(k)}"`;
+    else if (j === 'Pemasukan'   && k) msg = `📭 Tidak ada pemasukan untuk "${esc(k)}"`;
+    else if (j === 'Pengeluaran')      msg = '📭 Tidak ada pengeluaran bulan ini';
+    else if (j === 'Pemasukan')        msg = '📭 Tidak ada pemasukan bulan ini';
+    else if (k)                        msg = `📭 Tidak ada transaksi untuk "${esc(k)}"`;
+    document.getElementById('t-summary').innerHTML = '';
+    document.getElementById('t-list').innerHTML = `<div class="empty-state">${msg}</div>`;
     return;
   }
+
+  // ── Summary bar ──────────────────────────────────────────────
+  const tIn  = rows.filter(r => r.jenis === 'Pemasukan').reduce((s, r) => s + r.nominal, 0);
+  const tOut = rows.filter(r => r.jenis === 'Pengeluaran').reduce((s, r) => s + r.nominal, 0);
+  const tNet = tIn - tOut;
+  document.getElementById('t-summary').innerHTML = `
+    <div class="t-summary-bar">
+      <div class="t-summary-item">
+        <div class="t-summary-label">Masuk</div>
+        <div class="t-summary-val in">+${fmtS(tIn)}</div>
+      </div>
+      <div class="t-summary-divider"></div>
+      <div class="t-summary-item">
+        <div class="t-summary-label">Keluar</div>
+        <div class="t-summary-val out">-${fmtS(tOut)}</div>
+      </div>
+      <div class="t-summary-divider"></div>
+      <div class="t-summary-item">
+        <div class="t-summary-label">Selisih</div>
+        <div class="t-summary-val ${tNet >= 0 ? 'in' : 'out'}">${tNet >= 0 ? '+' : ''}${fmtS(tNet)}</div>
+      </div>
+    </div>`;
 
   // ── Grouping per hari ────────────────────────────────────────
   const today     = new Date(); today.setHours(0,0,0,0);
@@ -235,7 +303,7 @@ export function renderTransaksi() {
     const subtotalStr   = (subtotal >= 0 ? '+' : '') + fmt(subtotal);
 
     const rowsHTML = g.rows.map(r => `
-      <div class="row-item">
+      <div class="row-item ${r.jenis === 'Pemasukan' ? 'row-in' : 'row-out'}">
         <div class="row-swipe-inner">
           <div class="row-icon" style="background:var(--surface2)">${ICONS[r.kategori] || '📌'}</div>
           <div class="row-info">
@@ -300,7 +368,7 @@ export function renderAnalitik() {
       </div>
       <div class="row-right row-amount out">-${fmt(r.nominal)}</div>
     </div>`
-  ).join('') || '<div class="empty-state">Belum ada data</div>';
+  ).join('') || '<div class="empty-state">📭 Belum ada pengeluaran terbesar tahun ini</div>';
 
   document.getElementById('a-label-bulan').textContent = m;
   document.getElementById('a-label-masuk').textContent = m;
@@ -424,7 +492,7 @@ function renderPerbandingan(m, y) {
   const allKats = [...new Set([...currRows, ...prevRows].map(r => r.kategori))];
 
   if (!allKats.length) {
-    el.innerHTML = '<div class="empty-state">Belum ada data untuk dibandingkan</div>';
+    el.innerHTML = '<div class="empty-state">📭 Belum ada data untuk dibandingkan</div>';
     return;
   }
 
@@ -640,7 +708,7 @@ export function renderBudget() {
           <div class="bar-fill" style="width:${pct}%;background:${color}"></div>
         </div>
       </div>`;
-  }).join('') || '<div class="empty-state">Belum ada anggaran di Zaku</div>';
+  }).join('') || '<div class="empty-state">📊 Belum ada anggaran — set di Pengaturan</div>';
 }
 
 // ── RENDER CC ─────────────────────────────────────────────────
@@ -725,7 +793,7 @@ export function renderCC() {
       </div>
       <div class="row-right row-amount out">-${fmt(r.nominal)}</div>
     </div>`)
-    .join('') || '<div class="empty-state">Belum ada transaksi CC periode ini</div>';
+    .join('') || '<div class="empty-state">💳 Belum ada transaksi CC periode ini</div>';
 
   // ── Simulasi cicilan ──
   renderCicilanSimulator(total);
@@ -748,7 +816,7 @@ export function renderCicilanSimulator(tagihanOverride) {
   const tagihan = tagihanOverride ?? ccRows.reduce((s, r) => s + Number(r.nominal), 0);
 
   if (tagihan <= 0) {
-    el.innerHTML = '<div class="empty-state">Tidak ada tagihan untuk disimulasikan</div>';
+    el.innerHTML = '<div class="empty-state">💳 Belum ada tagihan CC untuk disimulasikan</div>';
     return;
   }
 
