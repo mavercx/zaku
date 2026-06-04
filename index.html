@@ -448,7 +448,11 @@
     <svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     <span class="bn-label">Transaksi</span>
   </button>
-  <div class="bn-fab-slot"></div>
+  <div class="bn-fab-slot">
+    <button class="bn-fab-btn" onclick="goTo('input','Catat')" aria-label="Catat Transaksi">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="22" height="22"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
   <button class="bn-tab" id="bn-analitik" onclick="goTo('analitik','Analitik')">
     <svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     <span class="bn-label">Analitik</span>
@@ -459,10 +463,7 @@
   </button>
 </nav>
 
-<!-- FAB -->
-<button class="fab" id="fab-catat" onclick="goTo('input','Catat')">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="26" height="26"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-</button>
+<!-- FAB digabung ke dalam bottom-nav -->
 
 <!-- UX MODULE -->
 <script type="module" src="js/ux.js"></script>
