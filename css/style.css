@@ -400,19 +400,21 @@ input:focus           { border-color:var(--accent); box-shadow:0 0 0 3px var(--a
 .row-item:last-child  { border-bottom:none; }
 
 /* ── GROUPING TRANSAKSI PER HARI ─────────────── */
-.t-day-group          { margin-bottom: 4px; }
+.t-day-group          { margin-bottom: 20px; }
 .t-day-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 4px 6px;
+  padding: 0 2px 8px;
+  border-bottom: 1.5px solid var(--border);
+  margin-bottom: 0;
 }
 .t-day-label {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
   color: var(--text2);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
 }
 .t-day-subtotal {
   font-size: 12px;
@@ -420,9 +422,27 @@ input:focus           { border-color:var(--accent); box-shadow:0 0 0 3px var(--a
 }
 .t-day-subtotal.in  { color: var(--green); }
 .t-day-subtotal.out { color: var(--red); }
-.t-day-group .row-item:first-child  { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
-.t-day-group .row-item:last-child   { border-radius: 0 0 var(--radius-sm) var(--radius-sm); border-bottom: none; }
-.t-day-group .row-item:only-child   { border-radius: var(--radius-sm); }
+
+/* Row dalam group — card menyatu */
+.t-day-group .row-item {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  margin: 0;
+}
+.t-day-group .row-item:first-child  {
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  border-top: 1px solid var(--border);
+}
+.t-day-group .row-item:last-child   {
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  border-bottom: 1px solid var(--border);
+}
+.t-day-group .row-item:only-child   {
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+body.dark-theme .t-day-group .row-item { background: var(--surface); }
 .row-icon             { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
 .row-info             { flex:1; min-width:0; }
 .row-name             { font-size:14px; font-weight:600; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
