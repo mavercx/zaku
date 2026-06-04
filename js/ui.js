@@ -140,6 +140,14 @@ export function goTo(page, title) {
   if (page === 'analitik') requestAnimationFrame(() => renderChart());
   window.scrollTo(0, 0);
 
+  // Sync filter pill saat buka halaman transaksi
+  if (page === 'transaksi') {
+    const jEl = document.getElementById('t-jenis');
+    if (jEl && typeof window.setJenisFilter === 'function') {
+      window.setJenisFilter(jEl.value);
+    }
+  }
+
   // ── Update bottom nav active state ──────────────────────────
   _updateBottomNav(page);
 }
@@ -191,6 +199,7 @@ export function syncPeriod(sId) {
     const el = document.getElementById(`${p}-${type}`);
     if (el) el.value = val;
   });
+  if (typeof window.updateAllPeriodLabels === 'function') window.updateAllPeriodLabels();
   window.renderAll();
 }
 
@@ -212,7 +221,6 @@ export function populateSelects() {
   });
 
   // Range tahun: 3 tahun ke belakang s/d 2 tahun ke depan
-  // Ini memastikan semua riwayat CC bisa dipilih
   const yearMin = cy - 3;
   const yearMax = cy + 2;
   const years   = [];
@@ -223,6 +231,9 @@ export function populateSelects() {
     if (!el) return;
     years.forEach(y => el.add(new Option(y, y, false, y === cy)));
   });
+
+  // Update label navigasi periode setelah dropdown terisi
+  if (typeof window.updateAllPeriodLabels === 'function') window.updateAllPeriodLabels();
 }
 
 // Fungsi untuk refresh year options setelah data load
