@@ -140,14 +140,6 @@ export function goTo(page, title) {
   if (page === 'analitik') requestAnimationFrame(() => renderChart());
   window.scrollTo(0, 0);
 
-  // Sync filter pill saat buka halaman transaksi
-  if (page === 'transaksi') {
-    const jEl = document.getElementById('t-jenis');
-    if (jEl && typeof window.setJenisFilter === 'function') {
-      window.setJenisFilter(jEl.value);
-    }
-  }
-
   // ── Update bottom nav active state ──────────────────────────
   _updateBottomNav(page);
 }
