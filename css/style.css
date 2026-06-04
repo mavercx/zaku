@@ -300,24 +300,31 @@ body.dark-theme .period-nav-btn { color: rgba(255,255,255,0.5); }
 body.dark-theme .period-nav-btn:hover { color: var(--accent); }
 
 /* ── FILTER PILL (halaman Transaksi) ─────────── */
-.filter-pill-group {
+.filter-bar-row {
   display: flex;
+  align-items: center;
   gap: 8px;
   margin-bottom: 16px;
 }
+.filter-pill-group {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+}
 .filter-pill {
   flex: 1;
-  padding: 8px 0;
+  padding: 7px 0;
   border-radius: 10px;
   border: 1.5px solid var(--border);
   background: var(--surface2);
   color: var(--text2);
   font-family: var(--font);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.18s;
   -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
 }
 .filter-pill.active {
   background: var(--accent);
@@ -338,6 +345,43 @@ body.dark-theme .filter-pill.active {
   background: var(--accent);
   color: #fff;
   border-color: var(--accent);
+}
+
+/* Dropdown kategori — compact di kanan */
+.filter-kat-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.filter-kat-wrap select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 7px 28px 7px 10px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  max-width: 110px;
+  outline: none;
+}
+.filter-kat-wrap select:focus {
+  border-color: var(--accent);
+}
+.filter-kat-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--text2);
+}
+body.dark-theme .filter-kat-wrap select {
+  background: var(--surface2);
+  color: rgba(255,255,255,0.5);
+  border-color: var(--border);
 }
 select, input {
   font-family:var(--font); padding:8px 14px; border:1px solid var(--border);
