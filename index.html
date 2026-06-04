@@ -169,10 +169,13 @@
 
   <!-- BERANDA -->
   <div class="container page active" id="page-beranda">
-    <div class="period-bar" data-swipe-period>
-      <select id="b-month" onchange="syncPeriod('b-month')"></select>
-      <select id="b-year"  onchange="syncPeriod('b-year')"></select>
+    <div class="period-nav" data-swipe-period data-prefix="b">
+      <button class="period-nav-btn" onclick="shiftPeriod('b',-1)">&#8249;</button>
+      <span class="period-nav-label" id="b-period-label"></span>
+      <button class="period-nav-btn" onclick="shiftPeriod('b',1)">&#8250;</button>
     </div>
+    <select id="b-month" style="display:none" onchange="syncPeriod('b-month')"></select>
+    <select id="b-year"  style="display:none" onchange="syncPeriod('b-year')"></select>
     <div id="b-summary"></div>
     <div id="onboarding">
       <div class="onboarding-card">
@@ -241,21 +244,38 @@
 
   <!-- TRANSAKSI -->
   <div class="container page" id="page-transaksi">
-    <div class="filter-bar" data-swipe-period>
-      <select id="t-month" onchange="syncPeriod('t-month')"></select>
-      <select id="t-year"  onchange="syncPeriod('t-year')"></select>
-      <select id="t-jenis" onchange="renderTransaksi()"><option value="">Semua Jenis</option><option value="Pengeluaran">Pengeluaran</option><option value="Pemasukan">Pemasukan</option></select>
-      <select id="t-kat"   onchange="renderTransaksi()"><option value="">Semua Kategori</option></select>
+    <div class="period-nav" data-swipe-period data-prefix="t">
+      <button class="period-nav-btn" onclick="shiftPeriod('t',-1)">&#8249;</button>
+      <span class="period-nav-label" id="t-period-label"></span>
+      <button class="period-nav-btn" onclick="shiftPeriod('t',1)">&#8250;</button>
     </div>
+    <select id="t-month" style="display:none" onchange="syncPeriod('t-month')"></select>
+    <select id="t-year"  style="display:none" onchange="syncPeriod('t-year')"></select>
+    <!-- Filter pill -->
+    <div class="filter-pill-group">
+      <button class="filter-pill active" onclick="setJenisFilter('')">Semua</button>
+      <button class="filter-pill" onclick="setJenisFilter('Pengeluaran')">Pengeluaran</button>
+      <button class="filter-pill" onclick="setJenisFilter('Pemasukan')">Pemasukan</button>
+    </div>
+    <!-- Hidden select — tetap dipakai oleh renderTransaksi() -->
+    <select id="t-jenis" style="display:none" onchange="renderTransaksi()">
+      <option value="">Semua Jenis</option>
+      <option value="Pengeluaran">Pengeluaran</option>
+      <option value="Pemasukan">Pemasukan</option>
+    </select>
+    <select id="t-kat" onchange="renderTransaksi()"><option value="">Semua Kategori</option></select>
     <div class="card"><div id="t-list" data-swipe-delete></div></div>
   </div>
 
   <!-- ANALITIK -->
   <div class="container page" id="page-analitik">
-    <div class="period-bar" data-swipe-period>
-      <select id="a-month" onchange="syncPeriod('a-month')"></select>
-      <select id="a-year"  onchange="syncPeriod('a-year')"></select>
+    <div class="period-nav" data-swipe-period data-prefix="a">
+      <button class="period-nav-btn" onclick="shiftPeriod('a',-1)">&#8249;</button>
+      <span class="period-nav-label" id="a-period-label"></span>
+      <button class="period-nav-btn" onclick="shiftPeriod('a',1)">&#8250;</button>
     </div>
+    <select id="a-month" style="display:none" onchange="syncPeriod('a-month')"></select>
+    <select id="a-year"  style="display:none" onchange="syncPeriod('a-year')"></select>
 
     <!-- Rekapitulasi Tahunan -->
     <div class="card" style="margin-bottom:24px;border:2px solid var(--accent-bg);">
@@ -323,10 +343,13 @@
 
   <!-- BUDGET -->
   <div class="container page" id="page-budget">
-    <div class="period-bar" data-swipe-period>
-      <select id="bg-month" onchange="syncPeriod('bg-month')"></select>
-      <select id="bg-year"  onchange="syncPeriod('bg-year')"></select>
+    <div class="period-nav" data-swipe-period data-prefix="bg">
+      <button class="period-nav-btn" onclick="shiftPeriod('bg',-1)">&#8249;</button>
+      <span class="period-nav-label" id="bg-period-label"></span>
+      <button class="period-nav-btn" onclick="shiftPeriod('bg',1)">&#8250;</button>
     </div>
+    <select id="bg-month" style="display:none" onchange="syncPeriod('bg-month')"></select>
+    <select id="bg-year"  style="display:none" onchange="syncPeriod('bg-year')"></select>
     <div class="card" style="padding:24px;margin-bottom:24px;">
       <h4 style="font-size:15px;font-weight:800;margin-bottom:16px;">Atur Anggaran Baru</h4>
       <div class="form-grid">
@@ -343,10 +366,13 @@
 
   <!-- KONTROL CC -->
   <div class="container page" id="page-cc">
-    <div class="period-bar" data-swipe-period>
-      <select id="c-month" onchange="syncPeriod('c-month')"></select>
-      <select id="c-year"  onchange="syncPeriod('c-year')"></select>
+    <div class="period-nav" data-swipe-period data-prefix="c">
+      <button class="period-nav-btn" onclick="shiftPeriod('c',-1)">&#8249;</button>
+      <span class="period-nav-label" id="c-period-label"></span>
+      <button class="period-nav-btn" onclick="shiftPeriod('c',1)">&#8250;</button>
     </div>
+    <select id="c-month" style="display:none" onchange="syncPeriod('c-month')"></select>
+    <select id="c-year"  style="display:none" onchange="syncPeriod('c-year')"></select>
 
     <!-- Stats 4 kartu -->
     <div class="stat-grid" id="c-stats"></div>
@@ -477,6 +503,64 @@ if ('serviceWorker' in navigator) {
       .catch(e => console.warn('SW failed:', e));
   });
 }
+
+const _MONTHS = ['Januari','Februari','Maret','April','Mei','Juni',
+                 'Juli','Agustus','September','Oktober','November','Desember'];
+
+window.setJenisFilter = function(val) {
+  document.getElementById('t-jenis').value = val;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  const pills = document.querySelectorAll('.filter-pill');
+  const map = { '': 0, 'Pengeluaran': 1, 'Pemasukan': 2 };
+  if (pills[map[val]]) pills[map[val]].classList.add('active');
+  if (typeof window.renderTransaksi === 'function') window.renderTransaksi();
+};
+
+window.shiftPeriod = function(prefix, dir) {
+  const mEl = document.getElementById(prefix + '-month');
+  const yEl = document.getElementById(prefix + '-year');
+  if (!mEl || !yEl) return;
+  let mIdx = _MONTHS.indexOf(mEl.value);
+  let y    = parseInt(yEl.value);
+  if (mIdx === -1) return;
+  mIdx += dir;
+  if (mIdx < 0)  { mIdx = 11; y--; }
+  if (mIdx > 11) { mIdx = 0;  y++; }
+  mEl.value = _MONTHS[mIdx];
+  // Tambah option tahun baru kalau belum ada di semua select tahun
+  ['b-year','t-year','a-year','bg-year','c-year'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const existing = [...el.options].map(o => parseInt(o.value));
+    if (!existing.includes(y)) {
+      // Insert pada posisi urut
+      let inserted = false;
+      for (let i = 0; i < el.options.length; i++) {
+        if (parseInt(el.options[i].value) > y) {
+          el.add(new Option(y, y), i);
+          inserted = true;
+          break;
+        }
+      }
+      if (!inserted) el.add(new Option(y, y));
+    }
+  });
+  yEl.value = y;
+  _updatePeriodLabel(prefix);
+  if (typeof window.syncPeriod === 'function') window.syncPeriod(prefix + '-month');
+  if (navigator.vibrate) navigator.vibrate(10);
+};
+
+window._updatePeriodLabel = function(prefix) {
+  const mEl = document.getElementById(prefix + '-month');
+  const yEl = document.getElementById(prefix + '-year');
+  const lEl = document.getElementById(prefix + '-period-label');
+  if (mEl && yEl && lEl) lEl.textContent = mEl.value + ' ' + yEl.value;
+};
+
+window.updateAllPeriodLabels = function() {
+  ['b','t','a','bg','c'].forEach(p => window._updatePeriodLabel(p));
+};
 </script>
 
 <!-- ENTRY POINT — semua JS dimuat dari sini -->
