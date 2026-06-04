@@ -90,13 +90,33 @@ function initSwipePeriod() {
     if (mIdx > 11) { mIdx = 0;  y++; }
 
     mEl.value = MONTHS[mIdx];
+
+    // Tambah option tahun baru kalau belum ada di semua select tahun
+    const allYearIds = ['b-year','t-year','a-year','bg-year','c-year'];
+    allYearIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const existing = [...el.options].map(o => parseInt(o.value));
+      if (!existing.includes(y)) {
+        let inserted = false;
+        for (let i = 0; i < el.options.length; i++) {
+          if (parseInt(el.options[i].value) > y) {
+            el.add(new Option(y, y), i);
+            inserted = true;
+            break;
+          }
+        }
+        if (!inserted) el.add(new Option(y, y));
+      }
+    });
     yEl.value = y;
 
-    // Sync all period bars via existing syncPeriod if available
+    // syncPeriod sudah memanggil updateAllPeriodLabels — tidak perlu update label di sini
     if (typeof window.syncPeriod === 'function') {
       window.syncPeriod(ids.m);
     } else if (typeof window.renderAll === 'function') {
       window.renderAll();
+      if (typeof window.updateAllPeriodLabels === 'function') window.updateAllPeriodLabels();
     }
 
     // Haptic feedback on supported devices
@@ -159,7 +179,7 @@ function initSwipeToDelete() {
 
   // Use MutationObserver to handle dynamically rendered rows
   const observer = new MutationObserver(() => attachSwipeHandlers(list));
-  observer.observe(list, { childList: true });
+  observer.observe(list, { childList: true, subtree: true });
   attachSwipeHandlers(list);
 }
 
@@ -264,9 +284,28 @@ document.addEventListener('touchstart', (e) => {
   }
 }, { passive: true });
 
+// ── 5. FAB ENTRANCE ──────────────────────────
+function initFAB() {
+  const fab = document.getElementById('fab-catat');
+  if (!fab) return;
+  // Animate in on load — SELALU include translateX(-50%) agar FAB tetap center
+  fab.style.transform = 'translateX(-50%) scale(0)';
+  fab.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+  setTimeout(() => { fab.style.transform = 'translateX(-50%) scale(1)'; }, 400);
+
+  // Bounce on tap
+  fab.addEventListener('touchstart', () => {
+    fab.style.transform = 'translateX(-50%) scale(0.9)';
+  }, { passive: true });
+  fab.addEventListener('touchend', () => {
+    fab.style.transform = 'translateX(-50%) scale(1)';
+  }, { passive: true });
+}
+
 // ── INIT ──────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   initSwipePeriod();
+  initFAB();
   // swipe-to-delete init runs after app renders t-list
   setTimeout(initSwipeToDelete, 800);
 });
