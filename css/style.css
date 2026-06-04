@@ -1134,15 +1134,18 @@ canvas#katTrendChart { min-height: 160px; }
 /* ── BOTTOM NAV ──────────────────────────────── */
 .bottom-nav {
   position: fixed;
-  bottom: 0; left: 0; right: 0;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  left: 12px; right: 12px;
   height: 62px;
   background: var(--surface);
-  border-top: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-radius: 20px;
   display: flex;
   align-items: stretch;
   z-index: 500;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  box-shadow: 0 -4px 20px rgba(31,58,90,0.08);
+  padding-bottom: 0;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+  overflow: hidden;
 }
 .bn-tab {
   flex: 1;
@@ -1205,19 +1208,14 @@ body.dark-theme .bn-tab.active::after {
   line-height: 1;
 }
 .bn-fab-slot {
-  flex: 1;
-  /* empty slot where FAB floats above */
+  flex: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
-/* ── FAB ─────────────────────────────────────── */
-.fab {
-  position: fixed;
-  bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 12px);
-  left: 50%;
-  /* translateX(-50%) dikelola oleh JS di ux.js agar tidak konflik dengan scale */
-  transform: translateX(-50%) scale(1);
-  width: 56px; height: 56px;
-  border-radius: 50%;
+.bn-fab-btn {
+  width: 44px; height: 44px;
+  border-radius: 14px;
   background: var(--accent);
   color: #fff;
   border: none;
@@ -1225,15 +1223,21 @@ body.dark-theme .bn-tab.active::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 18px rgba(78,110,90,0.45), 0 2px 6px rgba(0,0,0,0.12);
-  z-index: 600;
-  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1),
-              box-shadow 0.2s ease;
+  box-shadow: 0 2px 10px rgba(78,110,90,0.4);
+  transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s;
   -webkit-tap-highlight-color: transparent;
-  will-change: transform;
 }
-.fab:active {
-  box-shadow: 0 2px 8px rgba(78,110,90,0.4);
+.bn-fab-btn:active {
+  transform: scale(0.9);
+  box-shadow: 0 1px 4px rgba(78,110,90,0.3);
+}
+body.dark-theme .bn-fab-btn {
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+}
+
+/* ── FAB floating (diganti bn-fab-btn di dalam nav) ─────────── */
+.fab {
+  display: none !important;
 }
 
 /* ── MORE MENU BUTTON ────────────────────────── */
@@ -1343,12 +1347,12 @@ body.dark-theme .bn-tab.active::after {
 /* ── LAYOUT — adjust for bottom nav ─────────── */
 .container {
   /* 62px nav + safe area + 80px FAB clearance */
-  padding-bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 90px);
+  padding-bottom: calc(62px + 12px + 16px + env(safe-area-inset-bottom, 0px));
 }
 
 /* Support strip harus berada di atas FAB — tambah margin bawah ekstra */
 .support-strip {
-  margin-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+  margin-bottom: calc(62px + 12px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 /* On desktop, hide bottom nav and FAB, restore old padding */
