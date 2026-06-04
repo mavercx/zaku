@@ -178,6 +178,14 @@ export function resetForm(navigasi = true) {
   document.getElementById('f-ket').value              = '';
   document.getElementById('f-cc').checked             = false;
   document.getElementById('f-recur').checked          = false;
+  // Reset ke default
+  document.getElementById('f-jenis').value            = 'Pengeluaran';
+  document.getElementById('f-metode').value           = 'QRIS/Transfer';
+  updateKategoriDropdown();
+  // Reset tanggal ke hari ini
+  const nd = new Date();
+  nd.setMinutes(nd.getMinutes() - nd.getTimezoneOffset());
+  document.getElementById('f-tanggal').value = nd.toISOString().split('T')[0];
   if (navigasi && typeof window.goTo === 'function') window.goTo('beranda', 'Beranda');
 }
 
@@ -360,7 +368,7 @@ export async function batalLunasiCC(db, uid, periodKey) {
 export function updateAutocomplete() {
   const unique = [...new Set(window.data.map(d => d.keterangan).filter(k => k && k.trim()))];
   document.getElementById('histori-ket').innerHTML =
-    unique.map(k => `<option value="${k}">`).join('');
+    unique.map(k => `<option value="${k.replace(/"/g, '&quot;')}">`).join('');
 }
 
 export function syncFieldsFromHistory(val) {
