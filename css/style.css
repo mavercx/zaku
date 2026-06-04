@@ -251,9 +251,9 @@ body {
 
 /* ── LAYOUT ──────────────────────────────── */
 .container            { max-width:900px; margin:0 auto; padding:24px 20px 80px; }
-.page                 { display:none; animation:fadeIn .35s ease; }
-.page.active          { display:block; }
-@keyframes fadeIn     { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+.page                 { display:none; }
+.page.active          { display:block; animation: pageEnter 0.28s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes pageEnter  { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
 /* ── PERIOD / FILTER ─────────────────────── */
 .period-bar,
@@ -310,7 +310,6 @@ body.dark-theme .period-nav-btn:hover { color: var(--accent); }
 /* Dropdown kategori — compact di kanan */
 .filter-kat-wrap {
   position: relative;
-  flex-shrink: 0;
 }
 .filter-kat-wrap select {
   appearance: none;
@@ -403,6 +402,119 @@ input:focus           { border-color:var(--accent); box-shadow:0 0 0 3px var(--a
 /* ── ROW ITEMS ───────────────────────────── */
 .row-item             { display:flex; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid var(--border); }
 .row-item:last-child  { border-bottom:none; }
+
+/* ── SEARCH BAR TRANSAKSI ────────────────────── */
+.t-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.t-search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text2);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+#t-search {
+  width: 100%;
+  padding: 9px 36px 9px 36px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+#t-search:focus { border-color: var(--accent); }
+#t-search::placeholder { color: var(--text2); }
+.t-search-clear {
+  position: absolute;
+  right: 10px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: var(--text2);
+  color: var(--surface);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  padding: 0;
+  font-family: var(--font);
+}
+.t-search-clear:hover { opacity: 1; }
+
+/* ── SUMMARY BAR TRANSAKSI ───────────────────── */
+.t-summary-bar {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 0;
+  margin-bottom: 16px;
+}
+.t-summary-item {
+  flex: 1;
+  text-align: center;
+}
+.t-summary-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+.t-summary-val {
+  font-size: 14px;
+  font-weight: 800;
+}
+.t-summary-val.in  { color: var(--green); }
+.t-summary-val.out { color: var(--red); }
+.t-summary-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* ── GREETING BERANDA ────────────────────────── */
+.b-greeting {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent);
+}
+.b-greeting-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.b-greeting-name span { color: var(--accent); }
+.b-greeting-insight {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+.b-greeting-insight b { color: var(--text); font-weight: 700; }
+
+/* ── ROW ACCENT WARNA ────────────────────────── */
+.row-item.row-in  { border-left: 3px solid var(--green); }
+.row-item.row-out { border-left: 3px solid var(--red); }
+.t-day-group .row-item.row-in,
+.t-day-group .row-item.row-out { border-left-width: 3px; }
 
 /* ── GROUPING TRANSAKSI PER HARI ─────────────── */
 .t-day-group          { margin-bottom: 20px; }
