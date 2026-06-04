@@ -930,6 +930,7 @@ export function renderAll() {
 }
 
 // Expose ke window untuk inline HTML onclick
+window.renderAll               = renderAll;
 window.renderTransaksi          = renderTransaksi;
 window.renderAnalitik           = renderAnalitik;
 window.renderBudget             = renderBudget;
