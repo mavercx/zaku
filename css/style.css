@@ -257,7 +257,88 @@ body {
 
 /* ── PERIOD / FILTER ─────────────────────── */
 .period-bar,
-.filter-bar           { display:flex; gap:10px; margin-bottom:24px; align-items:center; flex-wrap:wrap; }
+.filter-bar           { display:flex; gap:10px; margin-bottom:12px; align-items:center; flex-wrap:wrap; }
+
+/* ── PERIOD NAV (navigasi bulan dengan panah) ── */
+.period-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 4px;
+  margin-bottom: 20px;
+  gap: 8px;
+}
+.period-nav-btn {
+  width: 36px; height: 36px;
+  border: none;
+  background: none;
+  color: var(--text2);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+.period-nav-btn:hover  { background: var(--accent-bg); color: var(--accent); }
+.period-nav-btn:active { background: var(--accent); color: #fff; }
+.period-nav-label {
+  flex: 1;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+body.dark-theme .period-nav { background: var(--surface); }
+body.dark-theme .period-nav-btn { color: rgba(255,255,255,0.5); }
+body.dark-theme .period-nav-btn:hover { color: var(--accent); }
+
+/* ── FILTER PILL (halaman Transaksi) ─────────── */
+.filter-pill-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.filter-pill {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--text2);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  -webkit-tap-highlight-color: transparent;
+}
+.filter-pill.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.filter-pill:not(.active):active {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+body.dark-theme .filter-pill {
+  background: var(--surface2);
+  color: rgba(255,255,255,0.5);
+  border-color: var(--border);
+}
+body.dark-theme .filter-pill.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
 select, input {
   font-family:var(--font); padding:8px 14px; border:1px solid var(--border);
   border-radius:var(--radius-sm); background:var(--surface); color:var(--text);
@@ -317,6 +398,31 @@ input:focus           { border-color:var(--accent); box-shadow:0 0 0 3px var(--a
 /* ── ROW ITEMS ───────────────────────────── */
 .row-item             { display:flex; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid var(--border); }
 .row-item:last-child  { border-bottom:none; }
+
+/* ── GROUPING TRANSAKSI PER HARI ─────────────── */
+.t-day-group          { margin-bottom: 4px; }
+.t-day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 4px 6px;
+}
+.t-day-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.t-day-subtotal {
+  font-size: 12px;
+  font-weight: 700;
+}
+.t-day-subtotal.in  { color: var(--green); }
+.t-day-subtotal.out { color: var(--red); }
+.t-day-group .row-item:first-child  { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+.t-day-group .row-item:last-child   { border-radius: 0 0 var(--radius-sm) var(--radius-sm); border-bottom: none; }
+.t-day-group .row-item:only-child   { border-radius: var(--radius-sm); }
 .row-icon             { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
 .row-info             { flex:1; min-width:0; }
 .row-name             { font-size:14px; font-weight:600; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
