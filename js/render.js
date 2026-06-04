@@ -198,24 +198,69 @@ export function renderTransaksi() {
   if (k) rows = rows.filter(r => r.kategori === k);
   rows = [...rows].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
 
-  document.getElementById('t-list').innerHTML = rows.map(r => `
-    <div class="row-item">
-      <div class="row-swipe-inner">
-        <div class="row-icon" style="background:var(--surface2)">${ICONS[r.kategori] || '📌'}</div>
-        <div class="row-info">
-          <div class="row-name">${esc(r.keterangan)}</div>
-          <div class="row-meta">${esc(r.kategori)} · ${esc(r.tanggal)}</div>
-        </div>
-        <div class="row-right">
-          <div class="row-amount ${r.jenis === 'Pemasukan' ? 'in' : 'out'}">${fmt(r.nominal)}</div>
-          <div class="row-actions">
-            <button class="btn-action" onclick="editRecord('${esc(r.id)}')">✏️</button>
-            <button class="btn-action" onclick="hapusRecord('${esc(r.id)}')">🗑️</button>
+  if (!rows.length) {
+    document.getElementById('t-list').innerHTML = '<div class="empty-state">Tidak ada data</div>';
+    return;
+  }
+
+  // ── Grouping per hari ────────────────────────────────────────
+  const today     = new Date(); today.setHours(0,0,0,0);
+  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+
+  function dayLabel(tgl) {
+    // Parse manual agar tidak kena UTC offset bug
+    const [yy, mm, dd] = tgl.split('-').map(Number);
+    const d = new Date(yy, mm - 1, dd); // local midnight
+    if (d.getTime() === today.getTime())     return 'Hari ini';
+    if (d.getTime() === yesterday.getTime()) return 'Kemarin';
+    return d.toLocaleDateString('id-ID', { weekday:'short', day:'numeric', month:'long', year:'numeric' });
+  }
+
+  // Kelompokkan rows per tanggal
+  const groups = [];
+  let lastTgl = null;
+  rows.forEach(r => {
+    if (r.tanggal !== lastTgl) {
+      groups.push({ tanggal: r.tanggal, rows: [] });
+      lastTgl = r.tanggal;
+    }
+    groups[groups.length - 1].rows.push(r);
+  });
+
+  document.getElementById('t-list').innerHTML = groups.map(g => {
+    const subtotal = g.rows.reduce((s, r) => {
+      return r.jenis === 'Pemasukan' ? s + r.nominal : s - r.nominal;
+    }, 0);
+    const subtotalClass = subtotal >= 0 ? 'in' : 'out';
+    const subtotalStr   = (subtotal >= 0 ? '+' : '') + fmt(subtotal);
+
+    const rowsHTML = g.rows.map(r => `
+      <div class="row-item">
+        <div class="row-swipe-inner">
+          <div class="row-icon" style="background:var(--surface2)">${ICONS[r.kategori] || '📌'}</div>
+          <div class="row-info">
+            <div class="row-name">${esc(r.keterangan)}</div>
+            <div class="row-meta">${esc(r.kategori)}</div>
+          </div>
+          <div class="row-right">
+            <div class="row-amount ${r.jenis === 'Pemasukan' ? 'in' : 'out'}">${r.jenis === 'Pemasukan' ? '+' : '-'}${fmt(r.nominal)}</div>
+            <div class="row-actions">
+              <button class="btn-action" onclick="editRecord('${esc(r.id)}')">✏️</button>
+              <button class="btn-action" onclick="hapusRecord('${esc(r.id)}')">🗑️</button>
+            </div>
           </div>
         </div>
-      </div>
-    </div>`
-  ).join('') || '<div class="empty-state">Tidak ada data</div>';
+      </div>`).join('');
+
+    return `
+      <div class="t-day-group">
+        <div class="t-day-header">
+          <span class="t-day-label">${dayLabel(g.tanggal)}</span>
+          <span class="t-day-subtotal ${subtotalClass}">${subtotalStr}</span>
+        </div>
+        ${rowsHTML}
+      </div>`;
+  }).join('');
 }
 
 // ── RENDER ANALITIK ───────────────────────────────────────────
