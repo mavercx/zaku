@@ -1,4 +1,4 @@
-// ═══════════════════════════════════════════
+// ════════════════════════════════════════════
 //  data.js — State Global & CRUD Firebase
 // ════════════════════════════════════════════
 
@@ -72,15 +72,20 @@ export async function simpan(db, uid) {
   const id     = document.getElementById('f-id').value;
   const isEdit = id !== '';
 
+  const tglStr = document.getElementById('f-tanggal').value;
+  // Parse manual agar tidak kena UTC offset bug (new Date('YYYY-MM-DD') = UTC midnight)
+  const [tglY, tglM, tglD] = tglStr.split('-').map(Number);
+  const tglDate = new Date(tglY, tglM - 1, tglD); // local midnight
+
   const record = {
-    tanggal:   document.getElementById('f-tanggal').value,
+    tanggal:   tglStr,
     jenis:     document.getElementById('f-jenis').value,
     kategori:  document.getElementById('f-kategori').value,
     metode:    document.getElementById('f-metode').value,
     nominal:   parseFloat(document.getElementById('f-nominal').value) || 0,
     keterangan:document.getElementById('f-ket').value.trim(),
-    bulan:     MONTHS[new Date(document.getElementById('f-tanggal').value).getMonth()],
-    tahun:     new Date(document.getElementById('f-tanggal').value).getFullYear(),
+    bulan:     MONTHS[tglDate.getMonth()],
+    tahun:     tglDate.getFullYear(),
     cc:        document.getElementById('f-cc').checked,
     recurring: document.getElementById('f-recur').checked,
   };
@@ -140,7 +145,8 @@ export function editRecord(id) {
   document.getElementById('form-title').textContent       = 'Edit Transaksi';
   document.getElementById('f-id').value                   = r.id;
   document.getElementById('f-jenis').value                = r.jenis;
-  updateKategoriDropdown();
+  if (typeof window.setFormJenis === 'function') window.setFormJenis(r.jenis);
+  else updateKategoriDropdown();
   document.getElementById('f-tanggal').value              = r.tanggal;
   document.getElementById('f-metode').value               = r.metode;
   document.getElementById('f-kategori').value             = r.kategori;
@@ -157,7 +163,8 @@ export function copyToForm(id) {
   const r = window.data.find(d => d.id === id);
   if (!r) return;
   document.getElementById('f-jenis').value           = r.jenis;
-  updateKategoriDropdown();
+  if (typeof window.setFormJenis === 'function') window.setFormJenis(r.jenis);
+  else updateKategoriDropdown();
   document.getElementById('f-kategori').value        = r.kategori;
   document.getElementById('f-metode').value          = r.metode;
   document.getElementById('f-nominal').value         = r.nominal;
@@ -178,10 +185,10 @@ export function resetForm(navigasi = true) {
   document.getElementById('f-ket').value              = '';
   document.getElementById('f-cc').checked             = false;
   document.getElementById('f-recur').checked          = false;
-  // Reset ke default
-  document.getElementById('f-jenis').value            = 'Pengeluaran';
   document.getElementById('f-metode').value           = 'QRIS/Transfer';
-  updateKategoriDropdown();
+  // setFormJenis handles: f-jenis.value, toggle visual, updateKategoriDropdown
+  if (typeof window.setFormJenis === 'function') window.setFormJenis('Pengeluaran');
+  else { document.getElementById('f-jenis').value = 'Pengeluaran'; updateKategoriDropdown(); }
   // Reset tanggal ke hari ini
   const nd = new Date();
   nd.setMinutes(nd.getMinutes() - nd.getTimezoneOffset());
@@ -375,11 +382,10 @@ export function syncFieldsFromHistory(val) {
   const match = window.data.find(d => d.keterangan === val);
   if (match) {
     document.getElementById('f-jenis').value           = match.jenis;
-    updateKategoriDropdown();
+    if (typeof window.setFormJenis === 'function') window.setFormJenis(match.jenis);
+    else updateKategoriDropdown();
     document.getElementById('f-kategori').value        = match.kategori;
     document.getElementById('f-metode').value          = match.metode;
-    // Nominal sengaja tidak diisi — user mengisi sendiri
-    // Gunakan checkAutoCC agar checkbox CC selalu konsisten dengan metode + jenis
     if (typeof window.checkAutoCC === 'function') window.checkAutoCC();
     showToast('Terisi otomatis dari riwayat!');
   }
