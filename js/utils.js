@@ -36,6 +36,12 @@ export function fmt(n) {
   return (n < 0 ? '-' : '') + 'Rp' + Math.round(Math.abs(n)).toLocaleString('id-ID');
 }
 
+/** Konversi nilai ke Number dengan aman — handle undefined/null/NaN → 0 */
+export function safeNum(val) {
+  const n = Number(val);
+  return isNaN(n) ? 0 : n;
+}
+
 /** Format singkat: Rp1,3 jt / Rp250 rb */
 export function fmtS(n) {
   const sign = n < 0 ? '-' : '';
@@ -53,7 +59,7 @@ export function getCCPeriod(dateStr) {
   let m = parseInt(monthStr) - 1;
   const d = parseInt(dayStr);
 
-  if (d > window.settings.ccCutoff) {
+  if (d > (window.settings?.ccCutoff ?? 25)) {
     m++;
     if (m > 11) { m = 0; y++; }
   }
@@ -86,6 +92,7 @@ export function formatRibuan(el) {
 }
 
 // ── EKSPOR KE WINDOW (untuk inline HTML onchange/onclick) ──────
+window.safeNum     = safeNum;
 window.showToast   = showToast;
 window.showLoading = showLoading;
 window.hideLoading = hideLoading;
