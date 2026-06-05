@@ -213,33 +213,81 @@
 
   <!-- INPUT -->
   <div class="container page" id="page-input">
-    <div class="card" style="padding:24px;">
-      <h3 id="form-title" style="margin-bottom:20px;font-size:18px;font-weight:800;">Catat Transaksi</h3>
-      <input type="hidden" id="f-id">
-      <div class="form-grid">
-        <div class="form-group"><label>Jenis</label><select id="f-jenis" onchange="updateKategoriDropdown()"><option value="Pengeluaran">Pengeluaran</option><option value="Pemasukan">Pemasukan</option></select></div>
-        <div class="form-group"><label>Tanggal</label><input type="date" id="f-tanggal"></div>
-        <div class="form-group"><label>Akun / Metode</label><select id="f-metode" onchange="checkAutoCC()"><option>QRIS/Transfer</option><option>Cash</option><option>Kartu Kredit</option></select></div>
-        <div class="form-group"><label>Kategori</label><select id="f-kategori"></select></div>
+    <input type="hidden" id="f-id">
+
+    <!-- Header judul -->
+    <div class="form-header">
+      <h3 id="form-title">Catat Transaksi</h3>
+    </div>
+
+    <!-- Toggle jenis: Pengeluaran / Pemasukan -->
+    <div class="form-jenis-toggle">
+      <button class="form-jenis-btn active out" id="btn-jenis-out" onclick="setFormJenis('Pengeluaran')">
+        <span>↗</span> Pengeluaran
+      </button>
+      <button class="form-jenis-btn in" id="btn-jenis-in" onclick="setFormJenis('Pemasukan')">
+        <span>↙</span> Pemasukan
+      </button>
+    </div>
+    <select id="f-jenis" style="display:none" onchange="updateKategoriDropdown()">
+      <option value="Pengeluaran">Pengeluaran</option>
+      <option value="Pemasukan">Pemasukan</option>
+    </select>
+
+    <!-- Nominal besar -->
+    <div class="form-nominal-wrap">
+      <span class="form-nominal-prefix">Rp</span>
+      <input type="text" id="f-nominal-display" placeholder="0" oninput="formatRibuan(this)" class="form-nominal-input" inputmode="numeric">
+      <input type="hidden" id="f-nominal">
+    </div>
+
+    <!-- Section: Detail -->
+    <div class="form-section">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tanggal</label>
+          <input type="date" id="f-tanggal">
+        </div>
+        <div class="form-group">
+          <label>Kategori</label>
+          <select id="f-kategori"></select>
+        </div>
       </div>
-      <div class="form-group" style="margin-bottom:14px;">
-        <label>Nominal (Rp)</label>
-        <input type="text" id="f-nominal-display" placeholder="0" oninput="formatRibuan(this)">
-        <input type="hidden" id="f-nominal">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Metode</label>
+          <select id="f-metode" onchange="checkAutoCC()">
+            <option>QRIS/Transfer</option>
+            <option>Cash</option>
+            <option>Kartu Kredit</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Keterangan</label>
+          <input type="text" id="f-ket" list="histori-ket" placeholder="Contoh: Bensin..." oninput="syncFieldsFromHistory(this.value)">
+          <datalist id="histori-ket"></datalist>
+        </div>
       </div>
-      <div class="form-group" style="margin-bottom:16px;">
-        <label>Keterangan</label>
-        <input type="text" id="f-ket" list="histori-ket" placeholder="Contoh: Bensin Picanto..." oninput="syncFieldsFromHistory(this.value)">
-        <datalist id="histori-ket"></datalist>
-      </div>
-      <div style="display:flex;gap:20px;margin-bottom:20px;">
-        <label id="wrap-cc" style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;"><input type="checkbox" id="f-cc"> Tagihan CC</label>
-        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;"><input type="checkbox" id="f-recur"> Berulang (Recurring)</label>
-      </div>
-      <div class="action-buttons">
-        <button class="btn-cancel" onclick="resetForm()">Batal</button>
-        <button class="btn-submit" id="btn-save" onclick="simpan()">Simpan Transaksi</button>
-      </div>
+    </div>
+
+    <!-- Toggle CC & Recurring -->
+    <div class="form-toggles">
+      <label id="wrap-cc" class="form-toggle-item">
+        <input type="checkbox" id="f-cc">
+        <span class="form-toggle-box"></span>
+        <span>Tagihan CC</span>
+      </label>
+      <label class="form-toggle-item">
+        <input type="checkbox" id="f-recur">
+        <span class="form-toggle-box"></span>
+        <span>Berulang</span>
+      </label>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="action-buttons">
+      <button class="btn-cancel" onclick="resetForm()">Batal</button>
+      <button class="btn-submit" id="btn-save" onclick="simpan()">Simpan</button>
     </div>
   </div>
 
@@ -517,6 +565,17 @@ if ('serviceWorker' in navigator) {
 const _MONTHS = ['Januari','Februari','Maret','April','Mei','Juni',
                  'Juli','Agustus','September','Oktober','November','Desember'];
 
+window.setFormJenis = function(val) {
+  document.getElementById('f-jenis').value = val;
+  if (typeof window.updateKategoriDropdown === 'function') window.updateKategoriDropdown();
+  if (typeof window.checkAutoCC === 'function') window.checkAutoCC();
+  const btnOut = document.getElementById('btn-jenis-out');
+  const btnIn  = document.getElementById('btn-jenis-in');
+  if (btnOut && btnIn) {
+    btnOut.classList.toggle('active', val === 'Pengeluaran');
+    btnIn.classList.toggle('active',  val === 'Pemasukan');
+  }
+};
 
 window.clearSearch = function() {
   const el = document.getElementById('t-search');
