@@ -136,7 +136,10 @@ export function renderBeranda() {
   // ── Greeting + Insight ───────────────────────────────────────
   const hour = new Date().getHours();
   const salam = hour < 11 ? 'Selamat pagi' : hour < 15 ? 'Selamat siang' : hour < 18 ? 'Selamat sore' : 'Selamat malam';
-  const nama  = window._currentUser?.displayName?.split(' ')[0] || 'Kamu';
+  // Prioritas: nama sapaan custom → Google displayName → 'Kamu'
+  const nama = localStorage.getItem('zaku_nama_sapaan')
+    || window._currentUser?.displayName?.split(' ')[0]
+    || 'Kamu';
 
   let insight = '';
   if (!rows.length) {
@@ -1040,6 +1043,10 @@ export function renderAll() {
   renderAnalitik();
   renderBudget();
   renderCC();
+  // Populate nama sapaan dari localStorage
+  const namaSapaan = localStorage.getItem('zaku_nama_sapaan');
+  const namaEl = document.getElementById('s-nama-sapaan');
+  if (namaEl && namaSapaan) namaEl.value = namaSapaan;
 }
 
 // Expose ke window untuk inline HTML onclick
