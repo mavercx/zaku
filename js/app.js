@@ -13,6 +13,7 @@ import {
   konfirmasiLunasiCC, batalLunasiCC,
 } from "./data.js";
 import { startNotifScheduler, checkAlerts, renderNotifSettings } from "./notif.js";
+import { exportCSV, exportPDF } from "./export.js";
 
 // firebase-init.js diimport terakhir karena
 // ia memanggil loadDataFromFirebase yang butuh semua modul siap
@@ -82,6 +83,16 @@ window.checkAutoCC = () => {
 
 window.updateKategoriDropdown = updateKategoriDropdown;
 window.formatRibuan           = formatRibuan;
+
+window.exportCSV = exportCSV;
+window.exportPDF = exportPDF;
+
+window.toggleExport = () => {
+  document.getElementById('export-dropdown').classList.toggle('show');
+};
+window.closeExport = () => {
+  document.getElementById('export-dropdown').classList.remove('show');
+};
 
 // Notifikasi: jalankan scheduler setelah data siap
 // (dipanggil dari data.js via window setelah loadDataFromFirebase selesai)
