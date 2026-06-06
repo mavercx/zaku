@@ -293,6 +293,4 @@ export function exportPDF() {
   }
 }
 
-// Expose ke window untuk inline HTML onclick
-window.exportCSV = exportCSV;
-window.exportPDF = exportPDF;
+
