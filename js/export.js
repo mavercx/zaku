@@ -244,7 +244,7 @@ export function exportPDF() {
             d.kategori,
             ket.length > 35 ? ket.substring(0, 33) + '…' : ket,
             d.metode || '-',
-            (d.jenis === 'Pengeluaran' ? '−' : '+') + fmt(nom),
+            (d.jenis === 'Pengeluaran' ? '-' : '+') + fmt(nom),
           ];
         }),
         styles:       { fontSize: 7.5, cellPadding: 2 },
@@ -261,7 +261,7 @@ export function exportPDF() {
         didParseCell: (data) => {
           if (data.column.index === 5 && data.section === 'body') {
             const val = String(data.cell.raw || '');
-            data.cell.styles.textColor = val.startsWith('−') ? [220, 38, 38] : [5, 150, 105];
+            data.cell.styles.textColor = val.startsWith('-') ? [220, 38, 38] : [5, 150, 105];
             data.cell.styles.fontStyle = 'bold';
           }
         },
