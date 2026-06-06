@@ -13,7 +13,7 @@ import {
   konfirmasiLunasiCC, batalLunasiCC,
 } from "./data.js";
 import { startNotifScheduler, checkAlerts, renderNotifSettings } from "./notif.js";
-import { exportCSV, exportPDF } from "./export.js";
+import { exportCSV, exportPDF, exportRange, openExportRangeModal } from "./export.js";
 
 // firebase-init.js diimport terakhir karena
 // ia memanggil loadDataFromFirebase yang butuh semua modul siap
@@ -84,8 +84,10 @@ window.checkAutoCC = () => {
 window.updateKategoriDropdown = updateKategoriDropdown;
 window.formatRibuan           = formatRibuan;
 
-window.exportCSV = exportCSV;
-window.exportPDF = exportPDF;
+window.exportCSV              = exportCSV;
+window.exportPDF              = exportPDF;
+window.exportRange            = exportRange;
+window.openExportRangeModal   = openExportRangeModal;
 
 window.toggleExport = () => {
   document.getElementById('export-dropdown').classList.toggle('show');
