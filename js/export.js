@@ -41,17 +41,122 @@ function escapeCSV(value) {
  * Contoh: "Jan2025-Jun2025"
  */
 function getDateRange(rows) {
-  if (!rows.length) return new Date().toISOString().split('T')[0];
+  if (!rows.length) return { display: new Date().toISOString().split('T')[0], filename: new Date().toISOString().split('T')[0] };
   const sorted  = [...rows].sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
   const first   = new Date(sorted[0].tanggal);
   const last    = new Date(sorted[sorted.length - 1].tanggal);
-  const fmtDate = d =>
+  // display: "Mei 2026" (dengan spasi) — untuk teks di PDF
+  const fmtDisplay = d =>
+    d.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
+  // filename: "Mei2026" (tanpa spasi) — untuk nama file
+  const fmtFile = d =>
     d.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }).replace(/\s+/g, '');
-  if (fmtDate(first) === fmtDate(last)) return fmtDate(first);
-  return `${fmtDate(first)}_sd_${fmtDate(last)}`;
+  const displayFirst = fmtDisplay(first), displayLast = fmtDisplay(last);
+  const fileFirst    = fmtFile(first),    fileLast    = fmtFile(last);
+  if (fileFirst === fileLast) return { display: displayFirst, filename: fileFirst };
+  return {
+    display:  `${displayFirst} sd ${displayLast}`,
+    filename: `${fileFirst}_sd_${fileLast}`,
+  };
 }
 
-// ── EXPORT CSV ────────────────────────────────────────────────
+// ── EXPORT RENTANG WAKTU ─────────────────────────────────────
+/**
+ * Filter data berdasarkan rentang tanggal lalu export CSV atau PDF
+ * @param {'csv'|'pdf'} type
+ * @param {string} from — format YYYY-MM-DD
+ * @param {string} to   — format YYYY-MM-DD
+ */
+export function exportRange(type, from, to) {
+  if (!window.data || window.data.length === 0) {
+    showToast('Tidak ada data untuk diekspor.', 'error');
+    return;
+  }
+  if (!from || !to) {
+    showToast('Pilih rentang tanggal terlebih dahulu.', 'error');
+    return;
+  }
+  if (from > to) {
+    showToast('Tanggal awal tidak boleh lebih dari tanggal akhir.', 'error');
+    return;
+  }
+
+  // Simpan data asli, ganti sementara dengan data yang difilter
+  const original = window.data;
+  window.data = original.filter(r => r.tanggal >= from && r.tanggal <= to);
+
+  if (window.data.length === 0) {
+    window.data = original;
+    showToast('Tidak ada data pada rentang tanggal tersebut.', 'error');
+    return;
+  }
+
+  if (type === 'csv') exportCSV();
+  else exportPDF();
+
+  window.data = original;
+}
+
+// ── MODAL RENTANG WAKTU ──────────────────────────────────────
+export function openExportRangeModal() {
+  // Buat modal jika belum ada
+  let modal = document.getElementById('export-range-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'export-range-modal';
+    modal.style.cssText = `
+      position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:3500;
+      display:flex;align-items:center;justify-content:center;
+    `;
+    modal.innerHTML = `
+      <div style="background:var(--surface);border-radius:var(--radius);padding:24px;
+                  max-width:340px;width:90%;box-shadow:0 16px 40px rgba(0,0,0,0.2);">
+        <div style="font-size:16px;font-weight:800;margin-bottom:16px;">📅 Export Rentang Waktu</div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px;">Dari Tanggal</label>
+          <input type="date" id="export-range-from"
+            style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);
+                   background:var(--surface2);color:var(--text);font-size:14px;font-family:var(--font);box-sizing:border-box;">
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px;">Sampai Tanggal</label>
+          <input type="date" id="export-range-to"
+            style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);
+                   background:var(--surface2);color:var(--text);font-size:14px;font-family:var(--font);box-sizing:border-box;">
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <button onclick="window.exportRange('csv', document.getElementById('export-range-from').value, document.getElementById('export-range-to').value); document.getElementById('export-range-modal').remove();"
+            style="flex:1;padding:11px;border-radius:var(--radius-sm);background:var(--accent);color:#fff;
+                   border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);">
+            📊 CSV
+          </button>
+          <button onclick="window.exportRange('pdf', document.getElementById('export-range-from').value, document.getElementById('export-range-to').value); document.getElementById('export-range-modal').remove();"
+            style="flex:1;padding:11px;border-radius:var(--radius-sm);background:var(--accent);color:#fff;
+                   border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);">
+            📄 PDF
+          </button>
+        </div>
+        <button onclick="document.getElementById('export-range-modal').remove();"
+          style="width:100%;padding:10px;border-radius:var(--radius-sm);background:var(--surface2);color:var(--text2);
+                 border:1px solid var(--border);font-size:13px;cursor:pointer;font-family:var(--font);">
+          Batal
+        </button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Set default: bulan ini
+    const now  = new Date();
+    const y    = now.getFullYear();
+    const m    = String(now.getMonth() + 1).padStart(2, '0');
+    const last = new Date(y, now.getMonth() + 1, 0).getDate();
+    document.getElementById('export-range-from').value = `${y}-${m}-01`;
+    document.getElementById('export-range-to').value   = `${y}-${m}-${last}`;
+  } else {
+    modal.style.display = 'flex';
+  }
+}
+
 export function exportCSV() {
   try {
     if (!window.data || window.data.length === 0) {
@@ -110,7 +215,8 @@ export function exportCSV() {
     const url        = URL.createObjectURL(blob);
     const anchor     = document.createElement('a');
     anchor.href      = url;
-    anchor.download  = `Zaku_${getDateRange(sorted)}.csv`;
+    const dateRange  = getDateRange(sorted);
+    anchor.download  = `Zaku_${dateRange.filename}.csv`;
     document.body.appendChild(anchor);
     anchor.click();
     document.body.removeChild(anchor);
@@ -171,7 +277,8 @@ export function exportPDF() {
     // Tanggal generate (pojok kanan)
     doc.setFontSize(8);
     doc.text(`Digenerate: ${new Date().toLocaleString('id-ID')}`, 196, 10, { align: 'right' });
-    doc.text(`Periode: ${getDateRange(sorted).replace(/_/g, ' ')}`, 196, 16, { align: 'right' });
+    const dateRange = getDateRange(sorted);
+    doc.text(`Periode: ${dateRange.display}`, 196, 16, { align: 'right' });
 
     // ── RINGKASAN KEUANGAN ───────────────────────────────────
     let y = 38;
@@ -222,14 +329,19 @@ export function exportPDF() {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
       doc.text(monthLabel, 17, y + 5);
-      // Subtotal di sebelah kanan header bulan
+      y += 9;
+
+      // Subtotal bar di bawah header bulan — full width agar tidak terpotong
+      doc.setFillColor(235, 242, 238);
+      doc.rect(14, y, 182, 6, 'F');
+      doc.setTextColor(50, 100, 70);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7.5);
       doc.text(
-        `Masuk: ${fmt(mIn)}  |  Keluar: ${fmt(mOut)}  |  Saldo: ${fmt(mIn - mOut)}`,
-        196, y + 5, { align: 'right' }
+        `Masuk: ${fmt(mIn)}   |   Keluar: ${fmt(mOut)}   |   Saldo: ${fmt(mIn - mOut)}`,
+        105, y + 4, { align: 'center' }
       );
-      y += 9;
+      y += 7;
 
       // Tabel transaksi
       doc.autoTable({
@@ -282,7 +394,7 @@ export function exportPDF() {
       doc.text(`Halaman ${i} / ${pageCount}`, 196, 292, { align: 'right' });
     }
 
-    const filename = `Zaku_Laporan_${getDateRange(sorted)}.pdf`;
+    const filename = `Zaku_Laporan_${dateRange.filename}.pdf`;
     doc.save(filename);
     showToast('✅ PDF berhasil diunduh!');
   } catch (err) {
